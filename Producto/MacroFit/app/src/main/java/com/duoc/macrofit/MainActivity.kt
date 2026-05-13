@@ -11,11 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.duoc.macrofit.ui.screens.LoginScreen
-import com.duoc.macrofit.ui.screens.MainScreen
-import com.duoc.macrofit.ui.screens.RegistroScreen
-import com.duoc.macrofit.ui.theme.MacrofitTheme
-import com.duoc.macrofit.utils.SessionManager // El vigilante global
+import com.duoc.macrofit.usuarios.ui.screens.LoginScreen
+import com.duoc.macrofit.usuarios.ui.screens.MainScreen
+import com.duoc.macrofit.usuarios.ui.screens.RegistroScreen
+import com.duoc.macrofit.usuarios.ui.theme.MacrofitTheme
+import com.duoc.macrofit.usuarios.utils.SessionManager
+import com.duoc.macrofit.nutricion.view.NutricionScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +32,9 @@ class MainActivity : ComponentActivity() {
                     var enPantallaRegistro by remember { mutableStateOf(false) }
 
                     if (usuarioGlobal != null) {
-                        MainScreen()
+                        // CAMBIO AQUÍ: Reemplazamos MainScreen() temporalmente
+                        // para probar el módulo de nutrición directamente.
+                        NutricionScreen()
                     } else {
                         if (enPantallaRegistro) {
                             RegistroScreen(
