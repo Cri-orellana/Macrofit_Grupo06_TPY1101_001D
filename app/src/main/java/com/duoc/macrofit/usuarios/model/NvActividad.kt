@@ -1,4 +1,4 @@
-package com.duoc.macrofit.model
+package com.duoc.macrofit.usuarios.model
 
 import com.google.gson.annotations.SerializedName
 

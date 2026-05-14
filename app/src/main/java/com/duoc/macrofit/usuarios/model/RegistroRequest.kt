@@ -1,4 +1,4 @@
-package com.duoc.macrofit.model
+package com.duoc.macrofit.usuarios.model
 
 data class RegistroRequest(
     val nom_usuario: String,

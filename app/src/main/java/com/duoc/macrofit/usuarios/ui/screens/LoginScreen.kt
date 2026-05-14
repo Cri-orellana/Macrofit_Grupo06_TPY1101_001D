@@ -1,4 +1,4 @@
-package com.duoc.macrofit.ui.screens
+package com.duoc.macrofit.usuarios.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.macrofit.viewmodel.LoginViewModel
+import com.duoc.macrofit.usuarios.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(

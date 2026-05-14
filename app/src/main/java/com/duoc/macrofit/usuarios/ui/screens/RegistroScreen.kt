@@ -1,10 +1,9 @@
-package com.duoc.macrofit.ui.screens
+package com.duoc.macrofit.usuarios.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -19,7 +18,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.macrofit.viewmodel.RegistroViewModel
+import com.duoc.macrofit.usuarios.viewmodel.RegistroViewModel
+import androidx.compose.foundation.lazy.items
+import com.duoc.macrofit.usuarios.model.Objetivo
 
 @Composable
 fun RegistroScreen(
@@ -140,18 +141,31 @@ fun PasoFisico(viewModel: RegistroViewModel) {
 @Composable
 fun PasoObjetivo(viewModel: RegistroViewModel) {
     Column {
-        Text("¿Cuál es tu meta?", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = "¿Cuál es tu meta?",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(viewModel.listaObjetivos) { objetivo ->
+
+                // CORRECCIÓN: Comparamos objeto con objeto
                 val seleccionado = viewModel.objetivoSeleccionado == objetivo
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { viewModel.objetivoSeleccionado = objetivo },
+                        .clickable {
+                            // CORRECCIÓN: Guardamos el objeto completo
+                            viewModel.objetivoSeleccionado = objetivo
+                        },
                     colors = CardDefaults.cardColors(
-                        containerColor = if (seleccionado) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface
+                        containerColor = if (seleccionado)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        else
+                            MaterialTheme.colorScheme.surface
                     ),
                     border = if (seleccionado) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
                 ) {
@@ -177,11 +191,17 @@ fun PasoActividad(viewModel: RegistroViewModel) {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(viewModel.listaActividades) { actividad ->
+
+                // CORRECCIÓN: Comparamos objeto con objeto
                 val seleccionado = viewModel.actividadSeleccionada == actividad
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { viewModel.actividadSeleccionada = actividad },
+                        .clickable {
+                            // CORRECCIÓN: Guardamos el objeto completo
+                            viewModel.actividadSeleccionada = actividad
+                        },
                     colors = CardDefaults.cardColors(
                         containerColor = if (seleccionado) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface
                     ),

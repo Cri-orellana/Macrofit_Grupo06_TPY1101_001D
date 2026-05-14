@@ -1,4 +1,4 @@
-package com.duoc.macrofit.utils
+package com.duoc.macrofit.usuarios.utils
 
 
 object Constants {

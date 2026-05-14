@@ -1,10 +1,11 @@
-package com.duoc.macrofit.api
+package com.duoc.macrofit.usuarios.api
 
-import com.duoc.macrofit.model.LoginRequest
-import com.duoc.macrofit.model.NvActividad
-import com.duoc.macrofit.model.Objetivo
-import com.duoc.macrofit.model.RegistroRequest
-import com.duoc.macrofit.model.Usuario
+
+import com.duoc.macrofit.usuarios.model.LoginRequest
+import com.duoc.macrofit.usuarios.model.NvActividad
+import com.duoc.macrofit.usuarios.model.Objetivo
+import com.duoc.macrofit.usuarios.model.RegistroRequest
+import com.duoc.macrofit.usuarios.model.Usuario
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

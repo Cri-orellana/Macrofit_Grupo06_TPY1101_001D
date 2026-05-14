@@ -1,4 +1,4 @@
-package com.duoc.macrofit.ui.screens
+package com.duoc.macrofit.usuarios.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.duoc.macrofit.utils.SessionManager
+import com.duoc.macrofit.usuarios.utils.SessionManager
 
 @Composable
 fun PerfilScreen()

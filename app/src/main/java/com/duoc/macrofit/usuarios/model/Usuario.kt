@@ -1,4 +1,4 @@
-package com.duoc.macrofit.model
+package com.duoc.macrofit.usuarios.model
 
 data class Usuario(
     val id: Int,

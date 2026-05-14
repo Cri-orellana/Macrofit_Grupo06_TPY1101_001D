@@ -1,4 +1,4 @@
-package com.duoc.macrofit.ui.theme
+package com.duoc.macrofit.usuarios.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

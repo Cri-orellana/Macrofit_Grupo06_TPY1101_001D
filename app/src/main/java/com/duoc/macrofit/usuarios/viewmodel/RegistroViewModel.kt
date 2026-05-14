@@ -1,4 +1,4 @@
-package com.duoc.macrofit.viewmodel
+package com.duoc.macrofit.usuarios.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.macrofit.api.RetrofitClient
-import com.duoc.macrofit.model.NvActividad
-import com.duoc.macrofit.model.Objetivo
-import com.duoc.macrofit.model.RegistroRequest
-import com.duoc.macrofit.utils.SessionManager
+import com.duoc.macrofit.usuarios.api.RetrofitClient
+import com.duoc.macrofit.usuarios.model.NvActividad
+import com.duoc.macrofit.usuarios.model.Objetivo
+import com.duoc.macrofit.usuarios.model.RegistroRequest
+import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 
 class RegistroViewModel : ViewModel() {

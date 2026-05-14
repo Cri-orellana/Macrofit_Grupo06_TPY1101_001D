@@ -1,14 +1,14 @@
-package com.duoc.macrofit.viewmodel
+package com.duoc.macrofit.usuarios.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.macrofit.api.RetrofitClient
-import com.duoc.macrofit.model.LoginRequest
-import com.duoc.macrofit.model.Usuario
-import com.duoc.macrofit.utils.SessionManager
+import com.duoc.macrofit.usuarios.api.RetrofitClient
+import com.duoc.macrofit.usuarios.model.LoginRequest
+import com.duoc.macrofit.usuarios.model.Usuario
+import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
