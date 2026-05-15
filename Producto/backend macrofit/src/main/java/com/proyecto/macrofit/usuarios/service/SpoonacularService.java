@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,7 @@ public class SpoonacularService {
         this.restTemplate = new RestTemplate();
     }
 
-    // TRADUCTOR DE DIETAS (Español a Inglés para que Spoonacular entienda)
+    // TRADUCTOR DE DIETAS
     private String traducirFiltroDieta(String dietaEspanol) {
         if (dietaEspanol == null || dietaEspanol.trim().isEmpty()) {
             return "";
@@ -44,21 +42,35 @@ public class SpoonacularService {
         return "";
     }
 
-    // TRADUCTOR DE TÍTULOS (Inglés a Español para tu Android)
+    // TRADUCTOR DE TEXTOS Y LIMPIEZA
     private String traducirTituloAlEspanol(String textoIngles) {
+        if (textoIngles == null || textoIngles.trim().isEmpty())
+            return "";
         try {
-            String textoCodificado = URLEncoder.encode(textoIngles, StandardCharsets.UTF_8.toString());
-            String urlTraductor = "https://api.mymemory.translated.net/get?q=" + textoCodificado + "&langpair=en|es";
+            // Limpiar etiquetas HTML raras que mande la API
+            String textoLimpio = textoIngles.replaceAll("<[^>]*>", "");
 
-            Map<String, Object> respuestaTraduccion = restTemplate.getForObject(urlTraductor, Map.class);
+            // Usamos las variables de RestTemplate para evitar errores con espacios y el
+            // símbolo "|"
+            String urlTraductor = "https://api.mymemory.translated.net/get?q={texto}&langpair=en|es";
+
+            Map<String, Object> respuestaTraduccion = restTemplate.getForObject(urlTraductor, Map.class, textoLimpio);
+
             if (respuestaTraduccion != null && respuestaTraduccion.containsKey("responseData")) {
                 Map<String, Object> datosRespuesta = (Map<String, Object>) respuestaTraduccion.get("responseData");
-                return (String) datosRespuesta.get("translatedText");
+                String textoTraducido = (String) datosRespuesta.get("translatedText");
+
+                // Si la traducción no devuelve errores extraños de MyMemory, la usamos
+                if (textoTraducido != null && !textoTraducido.contains("INVALID LANGUAGE")
+                        && !textoTraducido.contains("MYMEMORY")) {
+                    return textoTraducido;
+                }
             }
         } catch (Exception e) {
             System.err.println("⚠️ Error traduciendo texto: " + e.getMessage());
         }
-        return textoIngles;
+        // Si todo falla, devolvemos el texto original limpio
+        return textoIngles.replaceAll("<[^>]*>", "");
     }
 
     public List<ComidaRecomendada> buscarRecetasPersonalizadas(
@@ -83,6 +95,7 @@ public class SpoonacularService {
                     .queryParam("addRecipeNutrition", true)
                     .queryParam("fillIngredients", true)
                     .queryParam("addRecipeInformation", true)
+                    .queryParam("instructionsRequired", true)
                     .toUriString();
 
             Map<String, Object> respuestaSpoonacular = restTemplate.getForObject(urlFinal, Map.class);
@@ -97,41 +110,57 @@ public class SpoonacularService {
                     nuevaComida.setFoto_comida((String) recetaIngles.get("image"));
                     nuevaComida.setDescripcion_comida("Recomendación personalizada.");
 
-                    // Traducir y asignar el nombre
                     String tituloIngles = (String) recetaIngles.get("title");
                     nuevaComida.setNombre_comida(traducirTituloAlEspanol(tituloIngles));
 
-                    // Extraer Ingredientes
                     List<String> listaIng = new ArrayList<>();
                     if (recetaIngles.containsKey("extendedIngredients")) {
                         List<Map<String, Object>> extIng = (List<Map<String, Object>>) recetaIngles
                                 .get("extendedIngredients");
-                        for (Map<String, Object> ing : extIng) {
-                            listaIng.add((String) ing.get("original"));
+                        if (extIng != null) {
+                            for (Map<String, Object> ing : extIng) {
+                                String ingredienteOriginal = (String) ing.get("original");
+                                listaIng.add(traducirTituloAlEspanol(ingredienteOriginal));
+                            }
                         }
                     }
                     nuevaComida.setIngredientes_lista(listaIng);
 
-                    // Extraer Preparación
                     List<String> listaPasos = new ArrayList<>();
+
                     if (recetaIngles.containsKey("analyzedInstructions")) {
                         List<Map<String, Object>> instructions = (List<Map<String, Object>>) recetaIngles
                                 .get("analyzedInstructions");
-                        if (!instructions.isEmpty()) {
+                        if (instructions != null && !instructions.isEmpty()) {
                             List<Map<String, Object>> steps = (List<Map<String, Object>>) instructions.get(0)
                                     .get("steps");
-                            for (Map<String, Object> step : steps) {
-                                listaPasos.add((String) step.get("step"));
+                            if (steps != null) {
+                                for (Map<String, Object> step : steps) {
+                                    String pasoOriginal = (String) step.get("step");
+                                    if (pasoOriginal != null && !pasoOriginal.trim().isEmpty()) {
+                                        listaPasos.add(traducirTituloAlEspanol(pasoOriginal));
+                                    }
+                                }
                             }
                         }
                     }
+
+                    if (listaPasos.isEmpty() && recetaIngles.containsKey("instructions")) {
+                        String instruccionesGenerales = (String) recetaIngles.get("instructions");
+                        if (instruccionesGenerales != null && !instruccionesGenerales.trim().isEmpty()) {
+                            listaPasos.add(traducirTituloAlEspanol(instruccionesGenerales));
+                        }
+                    }
+
+                    if (listaPasos.isEmpty()) {
+                        listaPasos.add("Mezclar los ingredientes y preparar según preferencia.");
+                    }
+
                     nuevaComida.setPreparacion_lista(listaPasos);
 
-                    // Extraer Macros, Calorías y el Peso de la Porción
+                    // 4. Macros y Peso
                     Map<String, Object> nutricion = (Map<String, Object>) recetaIngles.get("nutrition");
                     if (nutricion != null) {
-
-                        // PESO PROPORCIONAL A LOS MACROS
                         if (nutricion.containsKey("weightPerServing")) {
                             Map<String, Object> pesoPorcion = (Map<String, Object>) nutricion.get("weightPerServing");
                             if (pesoPorcion != null) {
@@ -146,24 +175,25 @@ public class SpoonacularService {
                         if (nutricion.containsKey("nutrients")) {
                             List<Map<String, Object>> nutrientes = (List<Map<String, Object>>) nutricion
                                     .get("nutrients");
+                            if (nutrientes != null) {
+                                for (Map<String, Object> nutriente : nutrientes) {
+                                    String nombreNutriente = (String) nutriente.get("name");
+                                    Float cantidad = ((Number) nutriente.get("amount")).floatValue();
 
-                            for (Map<String, Object> nutriente : nutrientes) {
-                                String nombreNutriente = (String) nutriente.get("name");
-                                Float cantidad = ((Number) nutriente.get("amount")).floatValue();
-
-                                switch (nombreNutriente) {
-                                    case "Calories":
-                                        nuevaComida.setCalorias_porcion(cantidad);
-                                        break;
-                                    case "Protein":
-                                        nuevaComida.setProteina_porcion(cantidad);
-                                        break;
-                                    case "Carbohydrates":
-                                        nuevaComida.setCarbohidratos_porcion(cantidad);
-                                        break;
-                                    case "Fat":
-                                        nuevaComida.setGrasa_porcion(cantidad);
-                                        break;
+                                    switch (nombreNutriente) {
+                                        case "Calories":
+                                            nuevaComida.setCalorias_porcion(cantidad);
+                                            break;
+                                        case "Protein":
+                                            nuevaComida.setProteina_porcion(cantidad);
+                                            break;
+                                        case "Carbohydrates":
+                                            nuevaComida.setCarbohidratos_porcion(cantidad);
+                                            break;
+                                        case "Fat":
+                                            nuevaComida.setGrasa_porcion(cantidad);
+                                            break;
+                                    }
                                 }
                             }
                         }
