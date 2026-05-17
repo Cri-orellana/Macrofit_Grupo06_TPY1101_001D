@@ -32,6 +32,20 @@ public class UsuarioService {
 
     // Crear nuevo usuario
     public Usuario crearUsuario(Usuario usuario) {
+        // VALIDACIÓN: Correo único
+        if (repositorioUsuario.findByCorreo(usuario.getCorreo()).isPresent()) {
+            throw new IllegalArgumentException("El correo ya se encuentra registrado.");
+        }
+
+        // VALIDACIÓN: Contraseña alfanumérica de mín 8 caracteres
+        if (usuario.getContrasena() == null || !usuario.getContrasena().matches("^(?=.*[A-Za-z])(?=.*\\d).{8,}$")) {
+            throw new IllegalArgumentException(
+                    "La contraseña debe tener mínimo 8 caracteres, incluyendo solo letras y números.");
+        }
+
+        // Encriptamos la contraseña antes de guardarla
+        usuario.setContrasena(encriptarContrasena(usuario.getContrasena()));
+
         if (usuario.getRol() == null)
             usuario.setRol("USER");
 
@@ -47,12 +61,16 @@ public class UsuarioService {
     public Usuario loginUsuario(String correo, String contrasena) {
         Optional<UsuarioEntity> usuarioEncontrado = repositorioUsuario.findByCorreo(correo);
 
-        // Si existe, comprobamos que la contraseña coincida
-        if (usuarioEncontrado.isPresent() && usuarioEncontrado.get().getContrasena().equals(contrasena)) {
-            return convertirAUsuario(usuarioEncontrado.get());
+        if (usuarioEncontrado.isPresent()) {
+            // Encriptamos la contraseña que intentó ingresar y la comparamos con la
+            // guardada
+            String hashIntento = encriptarContrasena(contrasena);
+            if (usuarioEncontrado.get().getContrasena().equals(hashIntento)) {
+                return convertirAUsuario(usuarioEncontrado.get());
+            }
         }
 
-        // Login fallido (correo no existe o contraseña incorrecta)
+        // Login fallido
         return null;
     }
 
@@ -199,5 +217,22 @@ public class UsuarioService {
         entidad.setTmb_objetivo(usuario.getTmb_objetivo());
         entidad.setCal_diaria(usuario.getCal_diaria());
         return entidad;
+    }
+
+    private String encriptarContrasena(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al encriptar contraseña", e);
+        }
     }
 }

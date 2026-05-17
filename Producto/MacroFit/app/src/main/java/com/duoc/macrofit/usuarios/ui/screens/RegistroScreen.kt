@@ -29,7 +29,10 @@ fun RegistroScreen(
     onVolverAlLogin: () -> Unit
 ) {
     if (viewModel.registroExitoso) {
-        LaunchedEffect(Unit) { onRegistroExitoso() }
+        LaunchedEffect(Unit) {
+            viewModel.limpiarFormulario()
+            onRegistroExitoso()
+        }
     }
 
     MacroFitFondoUniversal {

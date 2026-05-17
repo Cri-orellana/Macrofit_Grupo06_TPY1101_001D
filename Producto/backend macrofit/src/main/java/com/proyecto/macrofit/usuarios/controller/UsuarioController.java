@@ -37,8 +37,16 @@ public class UsuarioController {
 
     @PostMapping("/registro")
     @Operation(summary = "Registra un nuevo Usuario")
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        return new ResponseEntity<>(servicioUsuario.crearUsuario(usuario), HttpStatus.CREATED);
+    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
+        try {
+            // Intenta crear el usuario
+            Usuario nuevo = servicioUsuario.crearUsuario(usuario);
+            return new ResponseEntity<>(nuevo, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            // Si salta alguna de nuestras validaciones (correo repetido o contraseña
+            // corta), devolvemos el error a Android
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/login")

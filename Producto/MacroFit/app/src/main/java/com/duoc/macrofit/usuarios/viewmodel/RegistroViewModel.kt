@@ -54,8 +54,19 @@ class RegistroViewModel : ViewModel() {
     fun avanzarPaso() {
         errorMessage = null
         when (pasoActual) {
-            1 -> if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) errorMessage = "Completa tus datos" else pasoActual++
-            2 -> if (edad.isBlank() || peso.isBlank() || altura.isBlank()) errorMessage = "Ingresa tu edad, peso y altura" else pasoActual++ // <-- VALIDACIÓN ACTUALIZADA
+            1 -> {
+                // Al menos 1 letra, al menos 1 número, mínimo 8 caracteres
+                val passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$".toRegex()
+
+                if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) {
+                    errorMessage = "Completa tus datos"
+                } else if (!contrasena.matches(passwordRegex)) {
+                    errorMessage = "La contraseña debe tener mínimo 8 caracteres (solo letras y números)"
+                } else {
+                    pasoActual++
+                }
+            }
+            2 -> if (edad.isBlank() || peso.isBlank() || altura.isBlank()) errorMessage = "Ingresa tu edad, peso y altura" else pasoActual++
             3 -> if (objetivoSeleccionado == null) errorMessage = "Selecciona un objetivo" else pasoActual++
             4 -> if (actividadSeleccionada == null) errorMessage = "Selecciona tu nivel de actividad" else registrar()
         }
@@ -88,7 +99,12 @@ class RegistroViewModel : ViewModel() {
                     registroExitoso = true
                     SessionManager.usuarioActual = response.body()
                 } else {
-                    errorMessage = "Error al crear cuenta. Quizás el correo ya existe."
+                    val mensajeErrorServidor = response.errorBody()?.string()
+                    errorMessage = if (!mensajeErrorServidor.isNullOrEmpty()) {
+                        mensajeErrorServidor
+                    } else {
+                        "Error desconocido al crear la cuenta."
+                    }
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión."
@@ -96,5 +112,19 @@ class RegistroViewModel : ViewModel() {
                 isLoading = false
             }
         }
+    }
+
+    fun limpiarFormulario() {
+        pasoActual = 1
+        nombre = ""
+        correo = ""
+        contrasena = ""
+        edad = ""
+        peso = ""
+        altura = ""
+        objetivoSeleccionado = null
+        actividadSeleccionada = null
+        registroExitoso = false
+        errorMessage = null
     }
 }
