@@ -1,0 +1,22 @@
+package com.duoc.macrofit.rutinas.model
+
+import com.google.gson.annotations.SerializedName
+
+data class RutinaUsuario(
+    @SerializedName("id_rutina_usuario")
+    val id_rutina_usuario: Int,
+
+    @SerializedName("id_rutina")
+    val id_rutina: Int,
+
+    @SerializedName("id_usuario")
+    val id_usuario: Int,
+
+    @SerializedName("fecha_inicio")
+    val fecha_inicio: String?,
+
+    @SerializedName("fecha_fin")
+    val fecha_fin: String?,
+
+    val activo: Boolean?
+)
