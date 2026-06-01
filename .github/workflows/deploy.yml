@@ -21,13 +21,13 @@ jobs:
             git fetch --all
             git reset --hard origin/main
 
-            # COMANDO CHISMOSO: Imprime qué carpetas hay realmente dentro de Producto
-            echo "--- CARPETAS DENTRO DE PRODUCTO ---"
-            ls -la Producto/
-
-            # ⚠️ CAMBIA 'Backend' POR EL NOMBRE EXACTO (MAYÚSCULAS/MINÚSCULAS) QUE ESTÁ EN GITHUB
+            # Entramos a la carpeta correcta en minúsculas (como vimos en el comando chismoso)
             cd Producto/backend
 
+            # 🧨 EL ASESINO DE CONTENEDORES: Destruimos el contenedor viejo por su nombre exacto
+            sudo docker rm -f macrofit-usuarios-api || true
+
+            # Limpiamos y levantamos el nuevo
             sudo docker compose down || true
-            sudo docker rmi macrofit-backend-app || true
+            sudo docker rmi backend-macrofit-usuarios || true
             sudo docker compose up --build -d
