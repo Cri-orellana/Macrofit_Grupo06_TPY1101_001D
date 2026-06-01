@@ -17,11 +17,15 @@ jobs:
           host: ${{ secrets.HOST_IP }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Aquí van los comandos exactos que tú escribías a mano:
           script: |
-            cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D/Producto/backend macrofit"
+            # 1. Entramos a la NUEVA carpeta del backend
+            cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D/Producto/Backend"
+
+            # 2. Descargamos los últimos cambios forzando la actualización
             git fetch --all
             git reset --hard origin/main
+
+            # 3. Apagamos, borramos la imagen vieja y levantamos el nuevo backend
             sudo docker compose down
             sudo docker rmi macrofit-backend-app || true
             sudo docker compose up --build -d
