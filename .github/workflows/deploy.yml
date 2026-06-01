@@ -18,11 +18,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D"
-
             git fetch --all
             git reset --hard origin/main
 
-            cd Producto/Backend
+            # COMANDO CHISMOSO: Imprime qué carpetas hay realmente dentro de Producto
+            echo "--- CARPETAS DENTRO DE PRODUCTO ---"
+            ls -la Producto/
+
+            # ⚠️ CAMBIA 'Backend' POR EL NOMBRE EXACTO (MAYÚSCULAS/MINÚSCULAS) QUE ESTÁ EN GITHUB
+            cd Producto/backend
 
             sudo docker compose down || true
             sudo docker rmi macrofit-backend-app || true
