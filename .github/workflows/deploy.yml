@@ -1,10 +1,9 @@
 name: Despliegue Automático a Oracle Cloud
 
-# Esto le dice a GitHub que se active solo cuando hagas un push a la rama principal
 on:
   push:
     branches:
-      - main # ⚠️ Si tu rama principal se llama 'master', cambia esto por 'master'
+      - main
 
 jobs:
   deploy:
@@ -18,14 +17,13 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Entramos a la NUEVA carpeta del backend
-            cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D/Producto/Backend"
+            cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D"
 
-            # 2. Descargamos los últimos cambios forzando la actualización
             git fetch --all
             git reset --hard origin/main
 
-            # 3. Apagamos, borramos la imagen vieja y levantamos el nuevo backend
-            sudo docker compose down
+            cd Producto/Backend
+
+            sudo docker compose down || true
             sudo docker rmi macrofit-backend-app || true
             sudo docker compose up --build -d
