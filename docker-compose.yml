@@ -1,0 +1,15 @@
+services:
+  macrofit-usuarios:
+    build: .
+    container_name: macrofit-usuarios-api
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_NAME=macrofit_db
+      - DB_USER=admin_macrofit
+      - DB_PASSWORD=password123
+      # 172.17.0.1 es la IP por defecto para que Docker hable con el MySQL de tu máquina host
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.17.0.1:3306/macrofit_db?useSSL=false&serverTimezone=UTC
+      - API_KEY=2cc1d2610130469cb33eed6cc81abd0e
+      - API_URL=https://api.spoonacular.com/recipes/complexSearch
+    restart: always

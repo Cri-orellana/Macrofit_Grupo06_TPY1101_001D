@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: macrofit-mysql-db
+    restart: always
+    environment:
+      # Recuerda poner las mismas credenciales que use tu proyecto
+      MYSQL_DATABASE: macrofit_db
+      MYSQL_ROOT_PASSWORD: password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  macrofit-usuarios:
+    build: .
+    container_name: macrofit-usuarios-api
+    restart: always
+    depends_on:
+      - db
+    environment:
+      # CRÍTICO: El host de la URL debe ser "db" (el nombre del servicio de arriba)
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/macrofit_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password123
+      API_KEY: "2cc1d2610130469cb33eed6cc81abd0e"
+      API_URL: "https://api.spoonacular.com"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

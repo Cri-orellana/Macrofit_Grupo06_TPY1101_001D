@@ -1,0 +1,27 @@
+name: Despliegue Automático a Oracle Cloud
+
+# Esto le dice a GitHub que se active solo cuando hagas un push a la rama principal
+on:
+  push:
+    branches:
+      - main # ⚠️ Si tu rama principal se llama 'master', cambia esto por 'master'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Conectando al servidor y actualizando
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Aquí van los comandos exactos que tú escribías a mano:
+          script: |
+            cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D/Producto/backend macrofit"
+            git fetch --all
+            git reset --hard origin/main
+            sudo docker compose down
+            sudo docker rmi macrofit-backend-app || true
+            sudo docker compose up --build -d
