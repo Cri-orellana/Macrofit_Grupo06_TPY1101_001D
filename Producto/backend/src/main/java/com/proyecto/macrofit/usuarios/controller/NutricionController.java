@@ -6,10 +6,12 @@ import com.proyecto.macrofit.usuarios.service.SpoonacularService;
 import com.proyecto.macrofit.usuarios.repository.ComidaRecomendadaRepository;
 import com.proyecto.macrofit.usuarios.repository.TipoAlimentacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/nutricion")
@@ -37,6 +39,48 @@ public class NutricionController {
         return comidaRepo.findAll();
     }
 
+    @PostMapping("/comidas")
+    public ResponseEntity<ComidaRecomendada> crearComida(@RequestBody ComidaRecomendada comida) {
+        if (comida.getTipo_alimentacion() != null && comida.getTipo_alimentacion().getId_tipo_alimentacion() != null) {
+            TipoAlimentacion tipo = tipoRepo.findById(comida.getTipo_alimentacion().getId_tipo_alimentacion())
+                    .orElse(null);
+            comida.setTipo_alimentacion(tipo);
+        }
+        return new ResponseEntity<>(comidaRepo.save(comida), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/comidas/{id}")
+    public ResponseEntity<ComidaRecomendada> editarComida(@PathVariable Integer id,
+            @RequestBody ComidaRecomendada comida) {
+        Optional<ComidaRecomendada> existente = comidaRepo.findById(id);
+        if (existente.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        ComidaRecomendada c = existente.get();
+        c.setNombre_comida(comida.getNombre_comida());
+        c.setDescripcion_comida(comida.getDescripcion_comida());
+        c.setCantidad_porcion(comida.getCantidad_porcion());
+        c.setCalorias_porcion(comida.getCalorias_porcion());
+        c.setProteina_porcion(comida.getProteina_porcion());
+        c.setCarbohidratos_porcion(comida.getCarbohidratos_porcion());
+        c.setGrasa_porcion(comida.getGrasa_porcion());
+        if (comida.getTipo_alimentacion() != null && comida.getTipo_alimentacion().getId_tipo_alimentacion() != null) {
+            TipoAlimentacion tipo = tipoRepo.findById(comida.getTipo_alimentacion().getId_tipo_alimentacion())
+                    .orElse(null);
+            c.setTipo_alimentacion(tipo);
+        }
+        return new ResponseEntity<>(comidaRepo.save(c), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/comidas/{id}")
+    public ResponseEntity<Void> eliminarComida(@PathVariable Integer id) {
+        if (!comidaRepo.existsById(id)) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        comidaRepo.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping("/recomendaciones")
     public ResponseEntity<List<ComidaRecomendada>> obtenerRecomendaciones(
             @RequestParam(required = false, defaultValue = "") String tipoDieta,
@@ -46,11 +90,7 @@ public class NutricionController {
             @RequestParam(required = false, defaultValue = "1000") Float maxGrasa) {
 
         List<ComidaRecomendada> recomendaciones = spoonacularService.buscarRecetasPersonalizadas(
-                tipoDieta,
-                ingredientes,
-                maxCarbohidratos,
-                minProteina,
-                maxGrasa);
+                tipoDieta, ingredientes, maxCarbohidratos, minProteina, maxGrasa);
 
         return ResponseEntity.ok(recomendaciones);
     }
