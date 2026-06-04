@@ -15,28 +15,31 @@ public class RutinaEjercicioEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id_rutina_ejercicio")
+    @Column(name = "id_rutina_ejercicio")
     private Integer idRutinaEjercicio;
 
-    @Column(name="id_ejercicio")
+    @Column(name = "id_ejercicio")
     private Integer idEjercicio;
 
-    @Column(name="id_rutina")
+    @Column(name = "id_rutina")
     private Integer idRutina;
 
-    @Column(name="orden")
+    @Column(name = "dia")
+    private Integer dia;
+
+    @Column(name = "orden")
     private Integer orden;
 
-    @Column(name="series")
+    @Column(name = "series")
     private Integer series;
 
-    @Column(name="tiempo_seg")
+    @Column(name = "tiempo_seg")
     private Integer tiempoSeg;
 
-    @Column(name="repeticiones")
+    @Column(name = "repeticiones")
     private Integer repeticiones;
 
-    @Column(name="peso_referencia")
+    @Column(name = "peso_referencia")
     private Float pesoReferencia;
-    
+
 }

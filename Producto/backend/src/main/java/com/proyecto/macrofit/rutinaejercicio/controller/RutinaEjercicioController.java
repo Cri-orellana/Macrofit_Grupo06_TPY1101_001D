@@ -58,11 +58,19 @@ public class RutinaEjercicioController {
     @PutMapping("/{id}")
     @Operation(summary = "Modificar una relación rutina-ejercicio")
     public ResponseEntity<RutinaEjercicio> modificar(@PathVariable Integer id,
-                                                     @RequestBody RutinaEjercicio rutinaEjercicio) {
+            @RequestBody RutinaEjercicio rutinaEjercicio) {
         RutinaEjercicio actualizado = servicioRutinaEjercicio.modificarRutinaEjercicio(id, rutinaEjercicio);
         return actualizado != null
                 ? new ResponseEntity<>(actualizado, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // --- ENDPOINT PARA DRAG AND DROP ---
+    @PutMapping("/bulk")
+    @Operation(summary = "Modificar multiples ejercicios a la vez (Drag & Drop)")
+    public ResponseEntity<List<RutinaEjercicio>> modificarMultiples(
+            @RequestBody List<RutinaEjercicio> rutinasEjercicios) {
+        return new ResponseEntity<>(servicioRutinaEjercicio.actualizarMultiples(rutinasEjercicios), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -82,5 +90,5 @@ public class RutinaEjercicioController {
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+
 }
