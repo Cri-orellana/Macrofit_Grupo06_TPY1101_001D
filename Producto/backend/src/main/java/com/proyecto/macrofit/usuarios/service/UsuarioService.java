@@ -105,63 +105,63 @@ public class UsuarioService {
     }
 
     private void calcularRequerimientos(UsuarioEntity entidad) {
-        if (entidad.getPeso() <= 0 || entidad.getAltura() == null)
+        if (entidad.getPeso() <= 0 || entidad.getAltura() == null || entidad.getSexo() == null)
             return;
 
-        if (entidad.getSexo() == "Masculino") {
-            // 1. TMB Base (Agregamos la edad a la fórmula si existe)
-            float tmbBase = (10f * entidad.getPeso()) + (6.25f * entidad.getAltura());
+        float tmbBase = (10f * entidad.getPeso()) + (6.25f * entidad.getAltura());
+        String sexo = entidad.getSexo();
+
+        if ("Masculino".equalsIgnoreCase(sexo) || "M".equalsIgnoreCase(sexo)) {
             if (entidad.getEdad() != null && entidad.getEdad() > 0) {
                 tmbBase = tmbBase - (5f * entidad.getEdad()) + 5f;
             }
-        } else if (entidad.getSexo() == "Femenino") {
-            // 1. TMB Base (Agregamos la edad a la fórmula si existe)
-            float tmbBase = (10f * entidad.getPeso()) + (6.25f * entidad.getAltura());
+        } else if ("Femenino".equalsIgnoreCase(sexo) || "F".equalsIgnoreCase(sexo)) {
             if (entidad.getEdad() != null && entidad.getEdad() > 0) {
                 tmbBase = tmbBase - (5f * entidad.getEdad()) - 161f;
             }
-            entidad.setTmb_objetivo(tmbBase);
-
-            // Factor de Actividad
-            float factor = 1.2f;
-            if (entidad.getId_nv_act() != null) {
-                switch (entidad.getId_nv_act()) {
-                    case 1:
-                        factor = 1.2f;
-                        break;
-                    case 2:
-                        factor = 1.375f;
-                        break;
-                    case 3:
-                        factor = 1.55f;
-                        break;
-                    case 4:
-                        factor = 1.725f;
-                        break;
-                    case 5:
-                        factor = 1.9f;
-                        break;
-                }
-            }
-
-            // Ajuste por Objetivo (A cambiar segun sea necesario)
-            float ajuste = 0f;
-            if (entidad.getId_objetivo() != null) {
-                switch (entidad.getId_objetivo()) {
-                    case 1:
-                        ajuste = -500f;
-                        break;
-                    case 2:
-                        ajuste = 0f;
-                        break;
-                    case 3:
-                        ajuste = 500f;
-                        break;
-                }
-            }
-
-            entidad.setCal_diaria((tmbBase * factor) + ajuste);
+        } else {
+            return;
         }
+
+        entidad.setTmb_objetivo(tmbBase);
+
+        float factor = 1.2f;
+        if (entidad.getId_nv_act() != null) {
+            switch (entidad.getId_nv_act()) {
+                case 1:
+                    factor = 1.2f;
+                    break;
+                case 2:
+                    factor = 1.375f;
+                    break;
+                case 3:
+                    factor = 1.55f;
+                    break;
+                case 4:
+                    factor = 1.725f;
+                    break;
+                case 5:
+                    factor = 1.9f;
+                    break;
+            }
+        }
+
+        float ajuste = 0f;
+        if (entidad.getId_objetivo() != null) {
+            switch (entidad.getId_objetivo()) {
+                case 1:
+                    ajuste = -500f;
+                    break;
+                case 2:
+                    ajuste = 0f;
+                    break;
+                case 3:
+                    ajuste = 500f;
+                    break;
+            }
+        }
+
+        entidad.setCal_diaria((tmbBase * factor) + ajuste);
     }
 
     // Modificar usuario existente

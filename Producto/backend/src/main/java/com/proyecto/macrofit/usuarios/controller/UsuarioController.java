@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class UsuarioController {
 
     @Autowired
+    private UsuarioService usuarioService;
     private UsuarioService servicioUsuario;
 
     @GetMapping
@@ -50,19 +51,16 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Inicia sesión y valida credenciales")
-    public ResponseEntity<Usuario> login(@RequestBody LoginRequest credenciales) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        System.out.println("DEBUG MÓVIL: Intentando login con correo: " + request.getCorreo());
+        Usuario user = usuarioService.loginUsuario(request.getCorreo(), request.getContrasena());
 
-        Usuario usuarioLogueado = servicioUsuario.loginUsuario(
-                credenciales.getCorreo(),
-                credenciales.getContrasena());
-
-        if (usuarioLogueado != null) {
-            // Devuelve un HTTP 200 (OK) y los datos del usuario
-            return new ResponseEntity<>(usuarioLogueado, HttpStatus.OK);
+        if (user != null) {
+            System.out.println("DEBUG MÓVIL: ¡ÉXITO! Usuario encontrado: " + user.getNom_usuario());
+            return ResponseEntity.ok(user);
         } else {
-            // Devuelve un HTTP 401 (No autorizado) si falló
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            System.out.println("DEBUG MÓVIL: FALLIDO. Revisar hash de contraseña.");
+            return ResponseEntity.status(401).body("Credenciales incorrectas");
         }
     }
 
