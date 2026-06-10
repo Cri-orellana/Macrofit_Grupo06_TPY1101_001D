@@ -170,9 +170,10 @@ public class UsuarioService {
             entidadExistente.setNom_usuario(usuarioActualizado.getNom_usuario());
             entidadExistente.setCorreo(usuarioActualizado.getCorreo());
             entidadExistente.setContrasena(usuarioActualizado.getContrasena());
-            entidadExistente.setEdad(usuarioActualizado.getEdad()); // NUEVO CAMPO
+            entidadExistente.setEdad(usuarioActualizado.getEdad());
             entidadExistente.setPeso(usuarioActualizado.getPeso());
             entidadExistente.setAltura(usuarioActualizado.getAltura());
+            entidadExistente.setSexo(usuarioActualizado.getSexo());
             entidadExistente.setId_objetivo(usuarioActualizado.getId_objetivo());
             entidadExistente.setId_nv_act(usuarioActualizado.getId_nv_act());
             entidadExistente.setTmb_objetivo(usuarioActualizado.getTmb_objetivo());
@@ -205,6 +206,7 @@ public class UsuarioService {
         usuario.setRol(entidad.getRol());
         usuario.setEdad(entidad.getEdad());
         usuario.setAltura(entidad.getAltura());
+        entidad.setSexo(usuario.getSexo());
         usuario.setPeso(entidad.getPeso());
         usuario.setId_objetivo(entidad.getId_objetivo());
         usuario.setId_nv_act(entidad.getId_nv_act());
@@ -224,6 +226,7 @@ public class UsuarioService {
         entidad.setRol(usuario.getRol());
         entidad.setEdad(usuario.getEdad());
         entidad.setAltura(usuario.getAltura());
+        entidad.setSexo(usuario.getSexo());
         entidad.setPeso(usuario.getPeso());
         entidad.setId_objetivo(usuario.getId_objetivo());
         entidad.setId_nv_act(usuario.getId_nv_act());
