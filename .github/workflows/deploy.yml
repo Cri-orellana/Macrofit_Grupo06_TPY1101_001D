@@ -1,14 +1,11 @@
 name: Despliegue Automático a Oracle Cloud
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Conectando al servidor y actualizando
         uses: appleboy/ssh-action@v1.0.3
@@ -20,14 +17,7 @@ jobs:
             cd "/home/ubuntu/Macrofit_Grupo06_TPY1101_001D"
             git fetch --all
             git reset --hard origin/main
-
-            # Entramos a la carpeta correcta en minúsculas (como vimos en el comando chismoso)
             cd Producto/backend
-
-            # 🧨 EL ASESINO DE CONTENEDORES: Destruimos el contenedor viejo por su nombre exacto
-            sudo docker rm -f macrofit-usuarios-api || true
-
-            # Limpiamos y levantamos el nuevo
             sudo docker compose down || true
             sudo docker rmi backend-macrofit-usuarios || true
             sudo docker compose up --build -d
