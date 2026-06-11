@@ -20,18 +20,17 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
-    private UsuarioService servicioUsuario;
 
     @GetMapping
     @Operation(summary = "Usuarios Registrados")
     public ResponseEntity<List<Usuario>> obtenerTodos() {
-        return new ResponseEntity<>(servicioUsuario.obtenerTodosLosUsuarios(), HttpStatus.OK);
+        return new ResponseEntity<>(usuarioService.obtenerTodosLosUsuarios(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener por ID")
     public ResponseEntity<Usuario> obtenerPorId(@PathVariable Integer id) {
-        Usuario usuario = servicioUsuario.obtenerUsuarioPorId(id);
+        Usuario usuario = usuarioService.obtenerUsuarioPorId(id);
         return usuario != null ? new ResponseEntity<>(usuario, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -41,7 +40,7 @@ public class UsuarioController {
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
         try {
             // Intenta crear el usuario
-            Usuario nuevo = servicioUsuario.crearUsuario(usuario);
+            Usuario nuevo = usuarioService.crearUsuario(usuario);
             return new ResponseEntity<>(nuevo, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             // Si salta alguna de nuestras validaciones (correo repetido o contraseña
@@ -67,7 +66,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     @Operation(summary = "Modificar un usuario existente")
     public ResponseEntity<Usuario> modificar(@PathVariable Integer id, @RequestBody Usuario usuario) {
-        Usuario actualizado = servicioUsuario.modificarUsuario(id, usuario);
+        Usuario actualizado = usuarioService.modificarUsuario(id, usuario);
         return actualizado != null ? new ResponseEntity<>(actualizado, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -75,7 +74,7 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar un usuario")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        boolean eliminado = servicioUsuario.eliminarUsuario(id);
+        boolean eliminado = usuarioService.eliminarUsuario(id);
         return eliminado ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -87,7 +86,7 @@ public class UsuarioController {
             @PathVariable Integer id,
             @RequestBody Usuario datosActualizados) {
 
-        Usuario actualizado = servicioUsuario.actualizarPerfil(id, datosActualizados);
+        Usuario actualizado = usuarioService.actualizarPerfil(id, datosActualizados);
 
         if (actualizado != null) {
             return new ResponseEntity<>(actualizado, HttpStatus.OK);

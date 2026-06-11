@@ -206,7 +206,7 @@ public class UsuarioService {
         usuario.setRol(entidad.getRol());
         usuario.setEdad(entidad.getEdad());
         usuario.setAltura(entidad.getAltura());
-        entidad.setSexo(usuario.getSexo());
+        usuario.setSexo(entidad.getSexo());
         usuario.setPeso(entidad.getPeso());
         usuario.setId_objetivo(entidad.getId_objetivo());
         usuario.setId_nv_act(entidad.getId_nv_act());
