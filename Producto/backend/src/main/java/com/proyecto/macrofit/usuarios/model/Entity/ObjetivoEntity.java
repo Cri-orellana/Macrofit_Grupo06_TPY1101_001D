@@ -9,22 +9,20 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "Objetivo")
-public class ObjetivoEntity {
 
+public class ObjetivoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_objetivo;
-
-    @Column(name = "descrip_obj")
     private String descrip_obj;
+    private Float ajuste_calorico;
 
-    private float ajuste_calorico;
-
+    // 1. CONSTRUCTOR VACÍO (Obligatorio para JPA/Hibernate)
     public ObjetivoEntity() {
     }
 
-    public ObjetivoEntity(Integer id_objetivo, String descrip_obj, float ajuste_calorico) {
-        this.id_objetivo = id_objetivo;
+    // 2. CONSTRUCTOR PARA EL SEEDER (Sin el ID)
+    public ObjetivoEntity(String descrip_obj, Float ajuste_calorico) {
         this.descrip_obj = descrip_obj;
         this.ajuste_calorico = ajuste_calorico;
     }

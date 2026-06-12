@@ -19,17 +19,23 @@ import com.proyecto.macrofit.usuarios.repository.TipoAlimentacionRepository;
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
-        @Autowired
-        private TipoAlimentacionRepository tipoAlimentacionRepo;
+        private final TipoAlimentacionRepository tipoAlimentacionRepo;
 
-        @Autowired
-        private ComidaRecomendadaRepository comidaRepo;
+        private final ComidaRecomendadaRepository comidaRepo;
 
-        @Autowired
-        private ObjetivoRepository objetivoRepo;
+        private final ObjetivoRepository objetivoRepo;
 
-        @Autowired
-        private NvActividadRepository actividadRepo;
+        private final NvActividadRepository actividadRepo;
+
+        public DatabaseSeeder(TipoAlimentacionRepository tipoAlimentacionRepo,
+                        ComidaRecomendadaRepository comidaRepo,
+                        ObjetivoRepository objetivoRepo,
+                        NvActividadRepository actividadRepo) {
+                this.tipoAlimentacionRepo = tipoAlimentacionRepo;
+                this.comidaRepo = comidaRepo;
+                this.objetivoRepo = objetivoRepo;
+                this.actividadRepo = actividadRepo;
+        }
 
         @Override
         public void run(String... args) throws Exception {

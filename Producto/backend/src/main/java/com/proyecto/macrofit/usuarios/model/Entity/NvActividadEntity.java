@@ -23,8 +23,7 @@ public class NvActividadEntity {
     public NvActividadEntity() {
     }
 
-    public NvActividadEntity(Integer id_nv_act, String desc_nv_act, float multiplicador) {
-        this.id_nv_act = id_nv_act;
+    public NvActividadEntity(String desc_nv_act, float multiplicador) {
         this.desc_nv_act = desc_nv_act;
         this.multiplicador = multiplicador;
     }
