@@ -19,8 +19,8 @@ public class Objetivo {
     public Objetivo() {
     }
 
-    public Objetivo(Integer id_objetivo, String descrip_obj, Float ajuste_calorico) {
-        this.id_objetivo = id_objetivo;
+    // En Objetivo.java — agrega este constructor
+    public Objetivo(String descrip_obj, Float ajuste_calorico) {
         this.descrip_obj = descrip_obj;
         this.ajuste_calorico = ajuste_calorico;
     }

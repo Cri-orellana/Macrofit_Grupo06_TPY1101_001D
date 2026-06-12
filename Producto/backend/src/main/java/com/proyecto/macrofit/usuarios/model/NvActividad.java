@@ -19,8 +19,7 @@ public class NvActividad {
     public NvActividad() {
     }
 
-    public NvActividad(Integer id_nv_act, String desc_nv_act, Float multiplicador) {
-        this.id_nv_act = id_nv_act;
+    public NvActividad(String desc_nv_act, Float multiplicador) {
         this.desc_nv_act = desc_nv_act;
         this.multiplicador = multiplicador;
     }

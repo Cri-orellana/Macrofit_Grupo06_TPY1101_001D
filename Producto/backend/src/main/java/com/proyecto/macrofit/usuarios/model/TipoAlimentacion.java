@@ -18,8 +18,7 @@ public class TipoAlimentacion {
     public TipoAlimentacion() {
     }
 
-    public TipoAlimentacion(Integer id_tipo_alimentacion, String nombre_tipo) {
-        this.id_tipo_alimentacion = id_tipo_alimentacion;
+    public TipoAlimentacion(String nombre_tipo) {
         this.nombre_tipo = nombre_tipo;
     }
 

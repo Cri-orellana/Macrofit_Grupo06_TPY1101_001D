@@ -44,28 +44,28 @@ public class DatabaseSeeder implements CommandLineRunner {
                 if (objetivoRepo.count() == 0) {
                         System.out.println("Tabla Objetivo vacía. Insertando datos por defecto...");
                         objetivoRepo.saveAll(Arrays.asList(
-                                        new Objetivo(1, "Bajar peso (Déficit)", -500f),
-                                        new Objetivo(2, "Mantener peso", 0f),
-                                        new Objetivo(3, "Subir masa muscular (Volumen)", 500f)));
+                                        new Objetivo("Bajar peso (Déficit)", -500f),
+                                        new Objetivo("Mantener peso", 0f),
+                                        new Objetivo("Subir masa muscular (Volumen)", 500f)));
                 }
 
                 if (actividadRepo.count() == 0) {
                         System.out.println("Tabla Nv_Actividad vacía. Insertando datos por defecto...");
                         actividadRepo.saveAll(Arrays.asList(
-                                        new NvActividad(1, "Sedentario (Poco o ningún ejercicio)", 1.1f),
-                                        new NvActividad(2, "Ligero (Ejercicio 1-3 días/sem)", 1.375f),
-                                        new NvActividad(3, "Moderado (Ejercicio 3-5 días/sem)", 1.55f),
-                                        new NvActividad(4, "Intenso (Ejercicio 6-7 días/sem)", 1.725f),
-                                        new NvActividad(5, "Muy intenso (Ejercicio diario intenso o trabajo físico)",
+                                        new NvActividad("Sedentario (Poco o ningún ejercicio)", 1.1f),
+                                        new NvActividad("Ligero (Ejercicio 1-3 días/sem)", 1.375f),
+                                        new NvActividad("Moderado (Ejercicio 3-5 días/sem)", 1.55f),
+                                        new NvActividad("Intenso (Ejercicio 6-7 días/sem)", 1.725f),
+                                        new NvActividad("Muy intenso (Ejercicio diario intenso o trabajo físico)",
                                                         1.9f)));
                 }
 
                 if (tipoAlimentacionRepo.count() == 0) {
                         tipoAlimentacionRepo.saveAll(Arrays.asList(
-                                        new TipoAlimentacion(1, "Omnívora"),
-                                        new TipoAlimentacion(2, "Vegetariana"),
-                                        new TipoAlimentacion(3, "Vegana"),
-                                        new TipoAlimentacion(4, "Keto")));
+                                        new TipoAlimentacion("Omnívora"),
+                                        new TipoAlimentacion("Vegetariana"),
+                                        new TipoAlimentacion("Vegana"),
+                                        new TipoAlimentacion("Keto")));
                 }
 
                 if (comidaRepo.count() == 0) {
