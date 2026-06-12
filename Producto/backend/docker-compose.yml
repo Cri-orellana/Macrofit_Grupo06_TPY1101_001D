@@ -1,9 +1,29 @@
 services:
+  db:
+    image: mysql:8.0
+    container_name: macrofit-mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=macrofit_db
+      - MYSQL_USER=admin_macrofit
+      - MYSQL_PASSWORD=password123
+      - MYSQL_ROOT_PASSWORD=root_password
+    networks:
+      - macrofit-net
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   macrofit-usuarios:
     build: .
     container_name: macrofit-usuarios-api
     ports:
-      - "80:8080"  
+      - "80:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://macrofit-mysql-db:3306/macrofit_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=admin_macrofit
@@ -16,21 +36,8 @@ services:
       - API_KEY=2cc1d2610130469cb33eed6cc81abd0e
       - API_URL=https://api.spoonacular.com/recipes/complexSearch
     depends_on:
-      - db
-    networks:
-      - macrofit-net
-    restart: always
-
-  db:
-    image: mysql:8.0
-    container_name: macrofit-mysql-db
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_DATABASE=macrofit_db
-      - MYSQL_USER=admin_macrofit
-      - MYSQL_PASSWORD=password123
-      - MYSQL_ROOT_PASSWORD=root_password
+      db:
+        condition: service_healthy
     networks:
       - macrofit-net
     restart: always
