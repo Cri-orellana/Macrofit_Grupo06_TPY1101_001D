@@ -108,18 +108,19 @@ public class SpoonacularService {
             Float minProteina,
             Float maxGrasa) {
 
-        // ✅ 1. Buscar en cache primero
         String cacheKey = generarCacheKey(tipoDieta, ingredientes,
                 maxCarbohidratos, minProteina, maxGrasa);
+
+        // ✅ 1. Si ya hay resultados para esta búsqueda, devolver directo
         List<RecetaCache> enCache = cacheRepo.findByCacheKey(cacheKey);
         if (!enCache.isEmpty()) {
-            System.out.println("✅ Cache HIT para: " + cacheKey);
+            System.out.println("✅ Cache HIT: " + cacheKey);
             return enCache.stream().map(this::cacheAComida).toList();
         }
 
-        System.out.println("🌐 Cache MISS — consultando Spoonacular para: " + cacheKey);
+        System.out.println("🌐 Cache MISS: " + cacheKey);
 
-        // 2. Si no hay cache, hacer el proceso normal (tu código actual)
+        // 2. Llamar a Spoonacular + traducir (tu código actual sin cambios)
         List<ComidaRecomendada> listaRecomendaciones = new ArrayList<>();
 
         try {
@@ -243,10 +244,10 @@ public class SpoonacularService {
                 }
             }
 
-            // 3. Guardar en cache antes de retornar
+            // ✅ 3. Guardar las 5 recetas, todas con la misma cacheKey
             for (ComidaRecomendada comida : listaRecomendaciones) {
                 RecetaCache cache = new RecetaCache();
-                cache.setCacheKey(cacheKey);
+                cache.setCacheKey(cacheKey); // misma key para las 5
                 cache.setSpoonacularId(comida.getId_comida());
                 cache.setNombre_comida(comida.getNombre_comida());
                 cache.setDescripcion_comida(comida.getDescripcion_comida());
@@ -258,12 +259,11 @@ public class SpoonacularService {
                 cache.setFoto_comida(comida.getFoto_comida());
                 cache.setIngredientes(comida.getIngredientes_lista());
                 cache.setPreparacion(comida.getPreparacion_lista());
-                cacheRepo.save(cache);
+                cacheRepo.save(cache); // 5 filas, misma key, IDs distintos ✅
             }
-            System.out.println("💾 " + listaRecomendaciones.size() + " recetas guardadas en cache.");
 
         } catch (Exception e) {
-            System.err.println("❌ Error crítico al consultar Spoonacular: " + e.getMessage());
+            System.err.println("❌ Error: " + e.getMessage());
         }
 
         return listaRecomendaciones;

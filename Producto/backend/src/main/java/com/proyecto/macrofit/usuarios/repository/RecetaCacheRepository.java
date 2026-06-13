@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface RecetaCacheRepository extends JpaRepository<RecetaCache, Integer> {
 
-    // Busca todas las recetas guardadas para una combinación de parámetros
+    // Trae las 5 recetas de una búsqueda
     List<RecetaCache> findByCacheKey(String cacheKey);
 
-    // Para verificar si ya existe
+    // Verifica si ya existe esa búsqueda guardada
     boolean existsByCacheKey(String cacheKey);
 }

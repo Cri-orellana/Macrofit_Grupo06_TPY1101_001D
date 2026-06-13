@@ -16,7 +16,7 @@ public class RecetaCache {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "cache_key", unique = true, nullable = false, length = 300)
+    @Column(name = "cache_key", nullable = false, length = 300)
     private String cacheKey;
 
     @Column(name = "spoonacular_id")
