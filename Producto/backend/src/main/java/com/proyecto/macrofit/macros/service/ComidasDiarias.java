@@ -51,4 +51,36 @@ public class ComidasDiarias {
         diarioRepository.deleteById(id);
     }
 
+    public ComidaUsuarioEntity actualizarComidaDiaria(Long id, Double nuevaPorcion) {
+        var comida = diarioRepository.findById(id).orElse(null);
+        if (comida == null) {
+            return null;
+        }
+
+        // Calcular factor de cambio proporcionalmente
+        Double porcionAnterior = comida.getPorcion();
+        if (porcionAnterior == null || porcionAnterior == 0) {
+            return null;
+        }
+
+        Double factor = nuevaPorcion / porcionAnterior;
+
+        // Recalcular macros proporcionalmente
+        comida.setPorcion(nuevaPorcion);
+        if (comida.getCalorias() != null) {
+            comida.setCalorias(comida.getCalorias() * factor);
+        }
+        if (comida.getProteinas() != null) {
+            comida.setProteinas(comida.getProteinas() * factor);
+        }
+        if (comida.getCarbohidratos() != null) {
+            comida.setCarbohidratos(comida.getCarbohidratos() * factor);
+        }
+        if (comida.getGrasas() != null) {
+            comida.setGrasas(comida.getGrasas() * factor);
+        }
+
+        return diarioRepository.save(comida);
+    }
+
 }

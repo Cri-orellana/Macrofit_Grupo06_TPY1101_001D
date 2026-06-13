@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,6 +28,12 @@ public class HistorialController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(lista);
+    }
+
+    @PostMapping("/cerrar-dia")
+    public ResponseEntity<Void> cerrarDiaManual() {
+        cierreService.cerrarDia();
+        return ResponseEntity.ok().build();
     }
 
 }

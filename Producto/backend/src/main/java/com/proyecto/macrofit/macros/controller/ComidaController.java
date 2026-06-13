@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.proyecto.macrofit.macros.model.ComidaDto;
+import com.proyecto.macrofit.macros.model.entity.ComidaNuevaEntity;
 import com.proyecto.macrofit.macros.service.ComidaService;
 
 @RestController
@@ -37,6 +38,21 @@ public class ComidaController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(comida);
+    }
+
+    private ComidaDto convertirEntidadADto(ComidaNuevaEntity entidad) {
+        ComidaDto dto = new ComidaDto();
+        dto.setBarra(entidad.getCode());
+        dto.setNombre(entidad.getNombre());
+
+        ComidaDto.Nutriments nutriments = new ComidaDto.Nutriments();
+        nutriments.setCalorias(entidad.getCalorias());
+        nutriments.setProteinas(entidad.getProteinas());
+        nutriments.setCarbohidratos(entidad.getCarbohidratos());
+        nutriments.setGrasas(entidad.getGrasas());
+
+        dto.setNutriments(nutriments);
+        return dto;
     }
 
 }

@@ -52,4 +52,15 @@ public class DiarioController {
         diarioService.eliminarComidaDiaria(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/actualizar/{id}")
+    public ResponseEntity<ComidaUsuarioEntity> actualizarPorcion(
+            @PathVariable Long id,
+            @RequestParam Double porcion) {
+        var comidaActualizada = diarioService.actualizarComidaDiaria(id, porcion);
+        if (comidaActualizada == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(comidaActualizada);
+    }
 }
