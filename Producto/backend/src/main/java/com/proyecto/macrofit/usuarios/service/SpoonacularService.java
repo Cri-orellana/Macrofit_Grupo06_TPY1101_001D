@@ -1,6 +1,10 @@
 package com.proyecto.macrofit.usuarios.service;
 
 import com.proyecto.macrofit.usuarios.model.ComidaRecomendada;
+import com.proyecto.macrofit.usuarios.model.RecetaCache;
+import com.proyecto.macrofit.usuarios.repository.RecetaCacheRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,6 +17,9 @@ import java.util.Map;
 @Service
 public class SpoonacularService {
 
+    @Autowired
+    private RecetaCacheRepository cacheRepo;
+
     @Value("${spoonacular.api.key}")
     private String claveApi;
 
@@ -23,6 +30,31 @@ public class SpoonacularService {
 
     public SpoonacularService() {
         this.restTemplate = new RestTemplate();
+    }
+
+    private String generarCacheKey(String tipoDieta, String ingredientes,
+            Float maxCarbs, Float minProt, Float maxGrasa) {
+        return String.format("%s|%s|%.1f|%.1f|%.1f",
+                tipoDieta.toLowerCase().trim(),
+                ingredientes.toLowerCase().trim(),
+                maxCarbs, minProt, maxGrasa);
+    }
+
+    // --- Convierte RecetaCache → ComidaRecomendada para devolver a la app ---
+    private ComidaRecomendada cacheAComida(RecetaCache cache) {
+        ComidaRecomendada c = new ComidaRecomendada();
+        c.setId_comida(cache.getSpoonacularId());
+        c.setNombre_comida(cache.getNombre_comida());
+        c.setDescripcion_comida(cache.getDescripcion_comida());
+        c.setCantidad_porcion(cache.getCantidad_porcion());
+        c.setCalorias_porcion(cache.getCalorias_porcion());
+        c.setProteina_porcion(cache.getProteina_porcion());
+        c.setCarbohidratos_porcion(cache.getCarbohidratos_porcion());
+        c.setGrasa_porcion(cache.getGrasa_porcion());
+        c.setFoto_comida(cache.getFoto_comida());
+        c.setIngredientes_lista(cache.getIngredientes());
+        c.setPreparacion_lista(cache.getPreparacion());
+        return c;
     }
 
     // TRADUCTOR DE DIETAS
@@ -50,8 +82,6 @@ public class SpoonacularService {
             // Limpiar etiquetas HTML raras que mande la API
             String textoLimpio = textoIngles.replaceAll("<[^>]*>", "");
 
-            // Usamos las variables de RestTemplate para evitar errores con espacios y el
-            // símbolo "|"
             String url = "https://api.mymemory.translated.net/get?q=" + textoLimpio
                     + "&langpair=en|es&de=cristianj.orellanaa@gmail.com";
             Map<String, Object> respuestaTraduccion = restTemplate.getForObject(url, Map.class);
@@ -60,7 +90,6 @@ public class SpoonacularService {
                 Map<String, Object> datosRespuesta = (Map<String, Object>) respuestaTraduccion.get("responseData");
                 String textoTraducido = (String) datosRespuesta.get("translatedText");
 
-                // Si la traducción no devuelve errores extraños de MyMemory, la usamos
                 if (textoTraducido != null && !textoTraducido.contains("INVALID LANGUAGE")
                         && !textoTraducido.contains("MYMEMORY")) {
                     return textoTraducido;
@@ -69,7 +98,6 @@ public class SpoonacularService {
         } catch (Exception e) {
             System.err.println("⚠️ Error traduciendo texto: " + e.getMessage());
         }
-        // Si todo falla, devolvemos el texto original limpio
         return textoIngles.replaceAll("<[^>]*>", "");
     }
 
@@ -79,6 +107,19 @@ public class SpoonacularService {
             Float maxCarbohidratos,
             Float minProteina,
             Float maxGrasa) {
+
+        // ✅ 1. Buscar en cache primero
+        String cacheKey = generarCacheKey(tipoDieta, ingredientes,
+                maxCarbohidratos, minProteina, maxGrasa);
+        List<RecetaCache> enCache = cacheRepo.findByCacheKey(cacheKey);
+        if (!enCache.isEmpty()) {
+            System.out.println("✅ Cache HIT para: " + cacheKey);
+            return enCache.stream().map(this::cacheAComida).toList();
+        }
+
+        System.out.println("🌐 Cache MISS — consultando Spoonacular para: " + cacheKey);
+
+        // 2. Si no hay cache, hacer el proceso normal (tu código actual)
         List<ComidaRecomendada> listaRecomendaciones = new ArrayList<>();
 
         try {
@@ -201,6 +242,26 @@ public class SpoonacularService {
                     listaRecomendaciones.add(nuevaComida);
                 }
             }
+
+            // 3. Guardar en cache antes de retornar
+            for (ComidaRecomendada comida : listaRecomendaciones) {
+                RecetaCache cache = new RecetaCache();
+                cache.setCacheKey(cacheKey);
+                cache.setSpoonacularId(comida.getId_comida());
+                cache.setNombre_comida(comida.getNombre_comida());
+                cache.setDescripcion_comida(comida.getDescripcion_comida());
+                cache.setCantidad_porcion(comida.getCantidad_porcion());
+                cache.setCalorias_porcion(comida.getCalorias_porcion());
+                cache.setProteina_porcion(comida.getProteina_porcion());
+                cache.setCarbohidratos_porcion(comida.getCarbohidratos_porcion());
+                cache.setGrasa_porcion(comida.getGrasa_porcion());
+                cache.setFoto_comida(comida.getFoto_comida());
+                cache.setIngredientes(comida.getIngredientes_lista());
+                cache.setPreparacion(comida.getPreparacion_lista());
+                cacheRepo.save(cache);
+            }
+            System.out.println("💾 " + listaRecomendaciones.size() + " recetas guardadas en cache.");
+
         } catch (Exception e) {
             System.err.println("❌ Error crítico al consultar Spoonacular: " + e.getMessage());
         }
