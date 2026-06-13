@@ -310,10 +310,17 @@ public class SpoonacularService {
                 }
             }
 
-            // Guardar las 5 recetas, todas con la misma cacheKey
+            // Guardar las recetas, verificando que no existan previamente
             for (ComidaRecomendada comida : listaRecomendaciones) {
+
+                // ✅ Si esta receta ya existe en cache, no la vuelvas a guardar
+                if (cacheRepo.existsBySpoonacularId(comida.getId_comida())) {
+                    System.out.println("⏭️ Ya existe en cache: " + comida.getNombre_comida());
+                    continue;
+                }
+
                 RecetaCache cache = new RecetaCache();
-                cache.setCacheKey(cacheKey); // misma key para las 5
+                cache.setCacheKey(cacheKey);
                 cache.setSpoonacularId(comida.getId_comida());
                 cache.setNombre_comida(comida.getNombre_comida());
                 cache.setDescripcion_comida(comida.getDescripcion_comida());
@@ -325,7 +332,8 @@ public class SpoonacularService {
                 cache.setFoto_comida(comida.getFoto_comida());
                 cache.setIngredientes(comida.getIngredientes_lista());
                 cache.setPreparacion(comida.getPreparacion_lista());
-                cacheRepo.save(cache); // 5 filas, misma key, IDs distintos ✅
+                cacheRepo.save(cache);
+                System.out.println("💾 Guardada: " + comida.getNombre_comida());
             }
 
         } catch (Exception e) {
