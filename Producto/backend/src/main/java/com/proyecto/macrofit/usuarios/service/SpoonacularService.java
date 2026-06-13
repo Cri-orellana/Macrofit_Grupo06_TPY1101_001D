@@ -101,6 +101,72 @@ public class SpoonacularService {
         return textoIngles.replaceAll("<[^>]*>", "");
     }
 
+    public int retraducirRecetasEnIngles() {
+        List<RecetaCache> todas = cacheRepo.findAll();
+        int traducidas = 0;
+
+        for (RecetaCache receta : todas) {
+
+            boolean necesitaTraduccion = false;
+
+            // Detectar si el nombre parece inglés (contiene palabras comunes en inglés)
+            String nombre = receta.getNombre_comida();
+            if (nombre != null && esIngles(nombre)) {
+                receta.setNombre_comida(traducirTituloAlEspanol(nombre));
+                necesitaTraduccion = true;
+            }
+
+            // Re-traducir ingredientes
+            List<String> ings = receta.getIngredientes();
+            if (ings != null && !ings.isEmpty() && esIngles(ings.get(0))) {
+                List<String> ingsTraducidos = new ArrayList<>();
+                for (String ing : ings) {
+                    ingsTraducidos.add(traducirTituloAlEspanol(ing));
+                }
+                receta.setIngredientes(ingsTraducidos);
+                necesitaTraduccion = true;
+            }
+
+            // Re-traducir pasos de preparación
+            List<String> pasos = receta.getPreparacion();
+            if (pasos != null && !pasos.isEmpty() && esIngles(pasos.get(0))) {
+                List<String> pasosTraducidos = new ArrayList<>();
+                for (String paso : pasos) {
+                    pasosTraducidos.add(traducirTituloAlEspanol(paso));
+                }
+                receta.setPreparacion(pasosTraducidos);
+                necesitaTraduccion = true;
+            }
+
+            if (necesitaTraduccion) {
+                cacheRepo.save(receta);
+                traducidas++;
+                System.out.println("✅ Traducida: " + nombre);
+
+                // Pausa de 1 segundo entre recetas para no saturar MyMemory
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+
+        return traducidas;
+    }
+
+    // Detector simple de inglés: busca palabras muy comunes en recetas en inglés
+    private boolean esIngles(String texto) {
+        if (texto == null || texto.isBlank())
+            return false;
+        String lower = texto.toLowerCase();
+        return lower.contains(" the ") || lower.contains(" with ") ||
+                lower.contains(" and ") || lower.contains(" of ") ||
+                lower.contains(" in ") || lower.contains(" to ") ||
+                lower.contains(" cup") || lower.contains(" tbsp") ||
+                lower.contains(" tsp") || lower.contains("chicken") ||
+                lower.contains("rice") || lower.contains("sauce");
+    }
+
     public List<ComidaRecomendada> buscarRecetasPersonalizadas(
             String tipoDieta,
             String ingredientes,
@@ -111,7 +177,7 @@ public class SpoonacularService {
         String cacheKey = generarCacheKey(tipoDieta, ingredientes,
                 maxCarbohidratos, minProteina, maxGrasa);
 
-        // ✅ 1. Si ya hay resultados para esta búsqueda, devolver directo
+        // Si ya hay resultados para esta búsqueda, devolver directo
         List<RecetaCache> enCache = cacheRepo.findByCacheKey(cacheKey);
         if (!enCache.isEmpty()) {
             System.out.println("✅ Cache HIT: " + cacheKey);
@@ -120,7 +186,7 @@ public class SpoonacularService {
 
         System.out.println("🌐 Cache MISS: " + cacheKey);
 
-        // 2. Llamar a Spoonacular + traducir (tu código actual sin cambios)
+        // Llamar a Spoonacular + traducir (tu código actual sin cambios)
         List<ComidaRecomendada> listaRecomendaciones = new ArrayList<>();
 
         try {
@@ -244,7 +310,7 @@ public class SpoonacularService {
                 }
             }
 
-            // ✅ 3. Guardar las 5 recetas, todas con la misma cacheKey
+            // Guardar las 5 recetas, todas con la misma cacheKey
             for (ComidaRecomendada comida : listaRecomendaciones) {
                 RecetaCache cache = new RecetaCache();
                 cache.setCacheKey(cacheKey); // misma key para las 5

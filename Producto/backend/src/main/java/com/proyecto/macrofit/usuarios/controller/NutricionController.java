@@ -94,4 +94,15 @@ public class NutricionController {
 
         return ResponseEntity.ok(recomendaciones);
     }
+
+    // En NutricionController.java
+
+    @PostMapping("/admin/retraducir-cache")
+    public ResponseEntity<String> retraducirCache() {
+        System.out.println("🔄 Iniciando re-traducción de recetas en caché...");
+        int cantidad = spoonacularService.retraducirRecetasEnIngles();
+        String mensaje = "✅ Re-traducción completada. Recetas actualizadas: " + cantidad;
+        System.out.println(mensaje);
+        return ResponseEntity.ok(mensaje);
+    }
 }
