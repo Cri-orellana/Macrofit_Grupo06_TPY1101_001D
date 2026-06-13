@@ -9,6 +9,8 @@ services:
       - MYSQL_USER=admin_macrofit
       - MYSQL_PASSWORD=password123
       - MYSQL_ROOT_PASSWORD=root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
       - macrofit-net
     restart: always
@@ -41,6 +43,10 @@ services:
     networks:
       - macrofit-net
     restart: always
+
+volumes:
+  mysql_data:
+    driver: local
 
 networks:
   macrofit-net:
