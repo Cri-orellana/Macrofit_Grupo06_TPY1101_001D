@@ -7,15 +7,15 @@ import retrofit2.http.Query
 
 interface ApiNutricion {
 
-    @GET("nutricion/tipos-dieta")
+    @GET("api/nutricion/tipos-dieta")
     suspend fun obtenerTiposDieta(): List<TipoAlimentacion>
 
-    @GET("nutricion/comidas")
+    @GET("api/nutricion/comidas")
     suspend fun obtenerComidasPorTipo(
         @Query("tipoId") id_tipo_alimentacion: Int
     ): List<ComidaRecomendada>
 
-    @GET("nutricion/recomendaciones")
+    @GET("api/nutricion/recomendaciones")
     suspend fun obtenerRecomendaciones(
         @Query("tipoDieta") tipoDieta: String? = null,
         @Query("ingredientes") ingredientes: String? = null,

@@ -1,5 +1,6 @@
 package com.duoc.macrofit.rutinas.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +10,7 @@ import com.duoc.macrofit.rutinas.api.RetrofitRutinas
 import com.duoc.macrofit.rutinas.model.CrearRutinaRequest
 import com.duoc.macrofit.rutinas.model.Ejercicio
 import com.duoc.macrofit.rutinas.model.RutinaEjercicioRequest
+import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 
 /**
@@ -24,9 +26,13 @@ data class EjercicioSeleccionado(
     val pesoReferencia: Float? = null
 )
 
+
 class CrearRutinaViewModel : ViewModel() {
 
     private val api = RetrofitRutinas.apiService
+
+    var cargandoRutinaEditar by mutableStateOf(false)
+    var yaCargoRutinaEditar by mutableStateOf(false)
 
     // ── Estado del formulario ─────────────────────────────────────────────────
     var nombreRutina by mutableStateOf("")
@@ -58,6 +64,7 @@ class CrearRutinaViewModel : ViewModel() {
                     ej.zonaMuscular.equals(zonaFiltro, ignoreCase = true)
             coincideNombre && coincideZona
         }
+
 
     // ── Ejercicios seleccionados ──────────────────────────────────────────────
     var ejerciciosSeleccionados by mutableStateOf<List<EjercicioSeleccionado>>(emptyList())
@@ -138,15 +145,24 @@ class CrearRutinaViewModel : ViewModel() {
     var errorMensaje by mutableStateOf<String?>(null)
 
     fun guardarRutina() {
+        Log.d("CREAR_VM", "Ejecutando guardarRutina() -> CREAR NUEVA")
+
         if (nombreRutina.isBlank()) { errorMensaje = "La rutina necesita un nombre."; return }
         if (ejerciciosSeleccionados.isEmpty()) { errorMensaje = "Agrega al menos un ejercicio."; return }
+
+        // Verificar que hay sesión activa antes de continuar
+        val idUsuario = SessionManager.usuarioActual?.id ?: run {
+            errorMensaje = "No hay sesión activa."
+            return
+        }
 
         viewModelScope.launch {
             guardando = true
             errorMensaje = null
             try {
-                // 1. Crear la rutina
+                //Crear la rutina
                 val rutinaResp = api.crearRutina(
+                    idUsuario = idUsuario,
                     CrearRutinaRequest(
                         nombreRutina = nombreRutina,
                         descripcion = descripcionRutina.ifBlank { null }
@@ -159,9 +175,9 @@ class CrearRutinaViewModel : ViewModel() {
 
                 val idRutinaCreada = rutinaResp.body()!!.idRutina
 
-                // 2. Agregar cada ejercicio con sus parámetros
+                //Agregar cada ejercicio con sus parametros
                 ejerciciosSeleccionados.forEachIndexed { index, sel ->
-                    api.agregarEjercicioARutina(
+                    val ejercicioResp = api.agregarEjercicioARutina(
                         RutinaEjercicioRequest(
                             idRutina = idRutinaCreada,
                             idEjercicio = sel.idEjercicio,
@@ -172,12 +188,133 @@ class CrearRutinaViewModel : ViewModel() {
                             pesoReferencia = sel.pesoReferencia
                         )
                     )
+                    if (!ejercicioResp.isSuccessful) {
+                        errorMensaje = "La rutina se creó, pero falló al agregar un ejercicio."
+                        return@launch
+                    }
                 }
 
                 rutinaGuardadaExitosamente = true
 
             } catch (e: Exception) {
                 errorMensaje = "Error de conexión al guardar la rutina."
+            } finally {
+                guardando = false
+            }
+        }
+    }
+
+    fun cargarRutinaParaEditar(idRutina: Int) {
+        if (yaCargoRutinaEditar) return
+
+        viewModelScope.launch {
+            cargandoRutinaEditar = true
+            errorMensaje = null
+
+            try {
+                val respRutina = api.obtenerRutinaPorId(idRutina)
+
+                if (!respRutina.isSuccessful || respRutina.body() == null) {
+                    errorMensaje = "No se pudo cargar la rutina para editar."
+                    return@launch
+                }
+
+                val rutina = respRutina.body()!!
+
+                nombreRutina = rutina.nombreRutina
+                descripcionRutina = rutina.descripcion ?: ""
+
+                if (todosLosEjercicios.isEmpty()) {
+                    val respEjercicios = api.obtenerEjerciciosActivos()
+                    if (respEjercicios.isSuccessful) {
+                        todosLosEjercicios = respEjercicios.body() ?: emptyList()
+                    }
+                }
+                val respRutinaEjercicios = api.obtenerEjerciciosDeRutina(idRutina)
+
+                if (!respRutinaEjercicios.isSuccessful) {
+                    errorMensaje = "No se pudieron cargar los ejercicios de la rutina."
+                    return@launch
+                }
+
+                val ejerciciosRutina = respRutinaEjercicios.body() ?: emptyList()
+
+                ejerciciosSeleccionados = ejerciciosRutina
+                    .sortedBy { it.orden }
+                    .map { re ->
+                        val ejercicio = todosLosEjercicios.find { it.idEjercicio == re.idEjercicio }
+
+                        EjercicioSeleccionado(
+                            idEjercicio = re.idEjercicio,
+                            nombreEjercicio = ejercicio?.nombreEjercicio ?: "Ejercicio #${re.idEjercicio}",
+                            series = re.series,
+                            repeticiones = re.repeticiones,
+                            tiempoSeg = re.tiempoSeg,
+                            pesoReferencia = re.pesoReferencia
+                        )
+                    }
+                yaCargoRutinaEditar = true
+            } catch (e: Exception) {
+                errorMensaje = "Error al cargar rutina para editar: ${e.message}"
+            } finally {
+                cargandoRutinaEditar = false
+            }
+        }
+    }
+
+    fun guardarEdicionRutina(idRutina: Int) {
+        Log.d("CREAR_VM", "Ejecutando guardarEdicionRutina($idRutina) -> EDITAR EXISTENTE")
+        if (nombreRutina.isBlank()) {
+            errorMensaje = "La rutina necesita un nombre."
+            return
+        }
+        if (ejerciciosSeleccionados.isEmpty()) {
+            errorMensaje = "Agrega al menos un ejercicio."
+            return
+        }
+        val idUsuario = SessionManager.usuarioActual?.id ?: run {
+            errorMensaje = "No hay sesión activa."
+            return
+        }
+        viewModelScope.launch {
+            guardando = true
+            errorMensaje = null
+
+            try {
+                val respRutina = api.editarRutina(
+                    idRutina = idRutina,
+                    idUsuario = idUsuario,
+                    request = CrearRutinaRequest(
+                        nombreRutina = nombreRutina,
+                        descripcion = descripcionRutina.ifBlank { null }
+                    )
+                )
+                if (!respRutina.isSuccessful) {
+                    errorMensaje = "No se pudo editar la rutina. Código: ${respRutina.code()}"
+                    return@launch
+                }
+                val ejerciciosRequest = ejerciciosSeleccionados.mapIndexed { index, sel ->
+                    RutinaEjercicioRequest(
+                        idRutina = idRutina,
+                        idEjercicio = sel.idEjercicio,
+                        orden = index + 1,
+                        series = sel.series,
+                        repeticiones = sel.repeticiones,
+                        tiempoSeg = sel.tiempoSeg,
+                        pesoReferencia = sel.pesoReferencia
+                    )
+                }
+                val respEjercicios = api.reemplazarEjerciciosDeRutina(
+                    idRutina = idRutina,
+                    ejercicios = ejerciciosRequest
+                )
+                if (!respEjercicios.isSuccessful) {
+                    errorMensaje = "La rutina se editó, pero falló al actualizar ejercicios. Código: ${respEjercicios.code()}"
+                    return@launch
+                }
+                rutinaGuardadaExitosamente = true
+            } catch (e: Exception) {
+                errorMensaje = "Error al guardar edición: ${e.message}"
             } finally {
                 guardando = false
             }
@@ -193,5 +330,7 @@ class CrearRutinaViewModel : ViewModel() {
         pasoActual = 1
         rutinaGuardadaExitosamente = false
         errorMensaje = null
+        cargandoRutinaEditar = false
+        yaCargoRutinaEditar = false
     }
 }

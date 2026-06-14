@@ -136,7 +136,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { SessionManager.limpiarSesion() },
+                onClick = { SessionManager.cerrarSesion() },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)

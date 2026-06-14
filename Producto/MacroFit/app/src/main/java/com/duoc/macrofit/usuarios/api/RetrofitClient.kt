@@ -32,4 +32,6 @@ object RetrofitClient {
     val apiNutricion: ApiNutricion by lazy {
         retrofitBase.create(ApiNutricion::class.java)
     }
+
+
 }

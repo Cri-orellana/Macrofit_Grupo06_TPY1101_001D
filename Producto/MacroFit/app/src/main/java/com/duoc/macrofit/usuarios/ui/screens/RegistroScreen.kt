@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.macrofit.usuarios.viewmodel.RegistroViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.duoc.macrofit.usuarios.model.Objetivo
 
 @Composable
@@ -99,9 +101,75 @@ fun RegistroScreen(
     }
 }
 
+
+@Composable
+fun PasoFisico(viewModel: RegistroViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // CAMBIO DE TÍTULO: Si ves esto en la pantalla, el código compiló bien.
+        Text("Tus datos físicos", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+        Text("Necesitamos estos datos para calcular tu metabolismo base.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(4.dp))
+
+        OutlinedTextField(
+            value = viewModel.edad, onValueChange = { viewModel.edad = it },
+            label = { Text("Edad (ej: 28)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true, modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = viewModel.peso, onValueChange = { viewModel.peso = it },
+            label = { Text("Peso en KG (ej: 75.5)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            singleLine = true, modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = viewModel.altura, onValueChange = { viewModel.altura = it },
+            label = { Text("Altura en CM (ej: 175)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true, modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Sexo biológico (Para cálculo metabólico)", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = { viewModel.sexo = "M" },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (viewModel.sexo == "M") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (viewModel.sexo == "M") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) { Text("Masculino") }
+
+            Button(
+                onClick = { viewModel.sexo = "F" },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (viewModel.sexo == "F") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (viewModel.sexo == "F") MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) { Text("Femenino") }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
 @Composable
 fun PasoCuenta(viewModel: RegistroViewModel) {
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
         Text("Tus credenciales", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
         Text("¿Cómo te llamaremos en la app?", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
@@ -122,35 +190,7 @@ fun PasoCuenta(viewModel: RegistroViewModel) {
             label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation(),
             singleLine = true, modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-@Composable
-fun PasoFisico(viewModel: RegistroViewModel) {
-    Column {
-        Text("Tu cuerpo", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
-        Text("Necesitamos estos datos para calcular tu metabolismo base.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            value = viewModel.edad, onValueChange = { viewModel.edad = it },
-            label = { Text("Edad (ej: 28)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true, modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = viewModel.peso, onValueChange = { viewModel.peso = it },
-            label = { Text("Peso en KG (ej: 75.5)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true, modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = viewModel.altura, onValueChange = { viewModel.altura = it },
-            label = { Text("Altura en CM (ej: 175)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true, modifier = Modifier.fillMaxWidth()
-        )
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -222,4 +262,5 @@ fun PasoActividad(viewModel: RegistroViewModel) {
             }
         }
     }
+
 }

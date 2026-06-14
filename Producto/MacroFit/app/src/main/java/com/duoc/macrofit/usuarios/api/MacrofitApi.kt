@@ -13,19 +13,20 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface MacrofitApi {
-    @POST("usuarios/login")
+
+    @POST("api/usuarios/login")
     suspend fun login(@Body credenciales: LoginRequest): Response<Usuario>
 
-    @GET("catalogos/objetivos")
+    @GET("api/catalogos/objetivos")
     suspend fun obtenerObjetivos(): Response<List<Objetivo>>
 
-    @GET("catalogos/actividades")
+    @GET("api/catalogos/actividades")
     suspend fun obtenerActividades(): Response<List<NvActividad>>
 
-    @POST("usuarios/registro")
+    @POST("api/usuarios/registro")
     suspend fun registrarUsuario(@Body nuevoUsuario: RegistroRequest): Response<Usuario>
 
-    @PATCH("usuarios/{id}/perfil")
+    @PATCH("api/usuarios/{id}/perfil")
     suspend fun actualizarPerfilUsuario(
         @Path("id") idUsuario: Int,
         @Body datosActualizados: Usuario

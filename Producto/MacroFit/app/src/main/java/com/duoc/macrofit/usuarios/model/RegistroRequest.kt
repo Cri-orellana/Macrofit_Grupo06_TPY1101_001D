@@ -9,6 +9,7 @@ data class RegistroRequest(
     val edad: Int,
     val peso: Float,
     val altura: Int,
+    val sexo: String,
     val id_objetivo: Int,
     @SerializedName("id_nv_act")
     val id_nv_actividad: Int

@@ -1,5 +1,6 @@
 package com.duoc.macrofit.rutinas.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -38,15 +39,27 @@ import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo
 fun CrearRutinaScreen(
     onVolver: () -> Unit,
     onRutinaCreada: () -> Unit,
+    idRutinaEditar: Int? = null,
     viewModel: CrearRutinaViewModel = viewModel()
 ) {
-    // Si se guardó correctamente, notificamos y volvemos
+    LaunchedEffect(idRutinaEditar) {
+        if (idRutinaEditar != null) {
+            viewModel.cargarRutinaParaEditar(idRutinaEditar)
+        }
+    }
+
     if (viewModel.rutinaGuardadaExitosamente) {
         LaunchedEffect(Unit) {
             viewModel.limpiar()
             onRutinaCreada()
         }
     }
+
+    val esModoEdicion = idRutinaEditar != null
+    Log.d(
+        "CREAR_SCREEN",
+        "Pantalla abierta. idRutinaEditar=$idRutinaEditar, esModoEdicion=$esModoEdicion"
+    )
 
     MacroFitFondoUniversal {
         Column(
@@ -108,10 +121,19 @@ fun CrearRutinaScreen(
             if (!viewModel.guardando) {
                 Button(
                     onClick = {
+                        Log.d(
+                            "CREAR_SCREEN",
+                            "Click botón principal. paso=${viewModel.pasoActual}, idRutinaEditar=$idRutinaEditar, esModoEdicion=$esModoEdicion"
+                        )
+
                         if (viewModel.pasoActual < 3) {
                             viewModel.avanzarPaso()
                         } else {
-                            viewModel.guardarRutina()
+                            if (esModoEdicion) {
+                                viewModel.guardarEdicionRutina(idRutinaEditar!!)
+                            } else {
+                                viewModel.guardarRutina()
+                            }
                         }
                     },
                     modifier = Modifier
@@ -123,7 +145,7 @@ fun CrearRutinaScreen(
                         text = when (viewModel.pasoActual) {
                             1 -> "Siguiente: Elegir Ejercicios"
                             2 -> "Siguiente: Ajustar Parámetros (${viewModel.ejerciciosSeleccionados.size})"
-                            else -> "Guardar Rutina"
+                            else -> if (esModoEdicion) "Guardar Cambios" else "Guardar Rutina"
                         },
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -144,9 +166,7 @@ fun CrearRutinaScreen(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PASO 1: Nombre y descripción
-// ─────────────────────────────────────────────────────────────────────────────
+//Identidad de rutina
 @Composable
 private fun PasoNombreDescripcion(viewModel: CrearRutinaViewModel) {
     val verde = MaterialTheme.colorScheme.primary
@@ -197,9 +217,7 @@ private fun PasoNombreDescripcion(viewModel: CrearRutinaViewModel) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PASO 2: Selector de ejercicios
-// ─────────────────────────────────────────────────────────────────────────────
+//Selector ejercicios
 @Composable
 private fun PasoSelectorEjercicios(viewModel: CrearRutinaViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -271,9 +289,7 @@ private fun PasoSelectorEjercicios(viewModel: CrearRutinaViewModel) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PASO 3: Revisión y ajuste de parámetros
-// ─────────────────────────────────────────────────────────────────────────────
+//Definicion de parametros
 @Composable
 private fun PasoRevisionParametros(viewModel: CrearRutinaViewModel) {
     val verde = MaterialTheme.colorScheme.primary

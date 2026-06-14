@@ -16,33 +16,41 @@ import com.duoc.macrofit.usuarios.ui.screens.MainScreen
 import com.duoc.macrofit.usuarios.ui.screens.RegistroScreen
 import com.duoc.macrofit.usuarios.ui.theme.MacrofitTheme
 import com.duoc.macrofit.usuarios.utils.SessionManager
-import com.duoc.macrofit.nutricion.view.NutricionScreen
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SessionManager.init(this)
+
+        SessionManager.init(applicationContext)
+
         setContent {
             MacrofitTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val usuarioGlobal = SessionManager.usuarioActual
-
+                    var isLogged by remember { mutableStateOf(SessionManager.usuarioActual != null) }
                     var enPantallaRegistro by remember { mutableStateOf(false) }
 
-                    if (usuarioGlobal != null) {
+                    if (isLogged) {
                         MainScreen()
                     } else {
                         if (enPantallaRegistro) {
                             RegistroScreen(
-                                onRegistroExitoso = { enPantallaRegistro = false },
+                                onRegistroExitoso = {
+                                    if(SessionManager.usuarioActual != null) {
+                                        isLogged = true
+                                    }
+                                    enPantallaRegistro = false
+                                },
                                 onVolverAlLogin = { enPantallaRegistro = false }
                             )
                         } else {
                             LoginScreen(
-                                onLoginSuccess = { },
+                                onLoginSuccess = {
+                                    isLogged = true
+                                },
                                 onNavigateToRegistro = { enPantallaRegistro = true }
                             )
                         }

@@ -1,5 +1,7 @@
 package com.duoc.macrofit.usuarios.ui.screens
 
+import android.util.Log
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -31,14 +33,13 @@ import com.duoc.macrofit.nutricion.view.NutricionScreen
 import com.duoc.macrofit.rutinas.view.CrearRutinaScreen
 import com.duoc.macrofit.rutinas.view.RutinasScreen
 import com.duoc.macrofit.macros.view.DiarioScreen
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.macrofit.macros.viewmodel.SeleccionarComidaViewModel
 
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
     var mostrarCrearRutina by remember { mutableStateOf(false) }
-    val macrosViewModel: SeleccionarComidaViewModel = viewModel()
+
+    var idRutinaEditar by remember { mutableStateOf<Int?>(null) }
 
     MacroFitFondoUniversal {
         Scaffold(
@@ -91,17 +92,35 @@ fun MainScreen() {
                     startDestination = "perfil"
                 ) {
                     composable("nutricion") { NutricionScreen() }
-                    composable("macros") { DiarioScreen(viewModel = macrosViewModel) }
+                    composable("macros") { DiarioScreen() }
 
                     composable("rutinas") {
                         if (mostrarCrearRutina) {
                             CrearRutinaScreen(
-                                onVolver = { mostrarCrearRutina = false },
-                                onRutinaCreada = { mostrarCrearRutina = false }
+                                idRutinaEditar = idRutinaEditar,
+                                onVolver = {
+                                    Log.d("NAV_RUTINA", "Volver desde CrearRutinaScreen")
+                                    idRutinaEditar = null
+                                    mostrarCrearRutina = false
+                                },
+                                onRutinaCreada = {
+                                    Log.d("NAV_RUTINA", "Rutina creada/editada, volviendo. idRutinaEditar=$idRutinaEditar")
+                                    idRutinaEditar = null
+                                    mostrarCrearRutina = false
+                                }
                             )
                         } else {
                             RutinasScreen(
-                                onCrearRutina = { mostrarCrearRutina = true }
+                                onCrearRutina = {
+                                    Log.d("NAV_RUTINA", "Crear rutina nueva")
+                                    idRutinaEditar = null
+                                    mostrarCrearRutina = true
+                                },
+                                onEditarRutina = { rutina ->
+                                    Log.d("NAV_RUTINA", "Editar rutina recibida: idRutina=${rutina.idRutina}")
+                                    idRutinaEditar = rutina.idRutina
+                                    mostrarCrearRutina = true
+                                }
                             )
                         }
                     }
@@ -110,6 +129,7 @@ fun MainScreen() {
                         PerfilScreen()
                     }
 
+                    // Se mantiene la ruta duplicada tal como venía en el Código 2 para no borrar nada
                     composable("macros") { DiarioScreen() }
                 }
             }

@@ -13,6 +13,8 @@ import com.duoc.macrofit.usuarios.model.RegistroRequest
 import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 class RegistroViewModel : ViewModel() {
 
@@ -24,6 +26,7 @@ class RegistroViewModel : ViewModel() {
     var edad by mutableStateOf("")
     var peso by mutableStateOf("")
     var altura by mutableStateOf("")
+    var sexo by mutableStateOf("")
 
     var listaObjetivos by mutableStateOf<List<Objetivo>>(emptyList())
     var listaActividades by mutableStateOf<List<NvActividad>>(emptyList())
@@ -68,7 +71,9 @@ class RegistroViewModel : ViewModel() {
                     pasoActual++
                 }
             }
-            2 -> if (edad.isBlank() || peso.isBlank() || altura.isBlank()) errorMessage = "Ingresa tu edad, peso y altura" else pasoActual++
+            2 -> if (edad.isBlank() || peso.isBlank() || altura.isBlank() || sexo.isBlank())
+                errorMessage = "Completa todos tus datos físicos, incluyendo el sexo"
+            else pasoActual++
             3 -> if (objetivoSeleccionado == null) errorMessage = "Selecciona un objetivo" else pasoActual++
             4 -> if (actividadSeleccionada == null) errorMessage = "Selecciona tu nivel de actividad" else registrar()
         }
@@ -92,6 +97,7 @@ class RegistroViewModel : ViewModel() {
                     edad = edad.toIntOrNull() ?: 0,
                     peso = peso.toFloatOrNull() ?: 0f,
                     altura = altura.toIntOrNull() ?: 0,
+                    sexo = if (sexo == "M") "Masculino" else "Femenino",
                     id_objetivo = objetivoSeleccionado!!.id_objetivo,
                     id_nv_actividad = actividadSeleccionada!!.id_nv_actividad
                 )
@@ -99,7 +105,7 @@ class RegistroViewModel : ViewModel() {
                 val response = RetrofitClient.apiService.registrarUsuario(nuevoRegistro)
                 if (response.isSuccessful && response.body() != null) {
                     registroExitoso = true
-                    SessionManager.usuarioActual = response.body()
+                    SessionManager.guardarSesion(response.body()!!)
                 } else {
                     val mensajeErrorServidor = response.errorBody()?.string()
                     errorMessage = if (!mensajeErrorServidor.isNullOrEmpty()) {
