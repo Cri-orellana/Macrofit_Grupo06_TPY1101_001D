@@ -22,10 +22,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/rutina-usuario")
+@RequestMapping("/rutina-usuario")
 @Tag(name = "RutinaUsuario", description = "Asignación de rutinas a usuarios + historial")
 public class RutinaUsuarioController {
-    
+
     @Autowired
     private RutinaUsuarioService servicioRutinaUsuario;
 
@@ -74,7 +74,7 @@ public class RutinaUsuarioController {
     @PutMapping("/{id}")
     @Operation(summary = "Modificar asignación de rutina a usuario")
     public ResponseEntity<RutinaUsuario> modificar(@PathVariable Integer id,
-                                                   @RequestBody RutinaUsuario rutinaUsuario) {
+            @RequestBody RutinaUsuario rutinaUsuario) {
         RutinaUsuario actualizada = servicioRutinaUsuario.modificarAsignacion(id, rutinaUsuario);
         return actualizada != null
                 ? new ResponseEntity<>(actualizada, HttpStatus.OK)

@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/ejercicios")
+@RequestMapping("/ejercicios")
 @Tag(name = "Ejercicios", description = "CRUD y consultas de ejercicios")
 public class EjercicioController {
 

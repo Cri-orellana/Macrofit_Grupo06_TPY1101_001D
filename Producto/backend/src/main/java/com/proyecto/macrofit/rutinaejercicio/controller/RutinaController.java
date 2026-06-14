@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/rutinas")
+@RequestMapping("/rutinas")
 @Tag(name = "Rutinas", description = "CRUD y consultas de rutinas")
 public class RutinaController {
 
