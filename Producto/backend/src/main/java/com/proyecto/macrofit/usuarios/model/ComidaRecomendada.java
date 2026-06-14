@@ -1,19 +1,10 @@
 package com.proyecto.macrofit.usuarios.model;
 
 import jakarta.persistence.*;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Transient;
-
 import java.util.List;
 
 @Entity
-@Table(name = "receta_cache")
+@Table(name = "comida_recomendada") // <--- ¡AQUÍ ESTÁ EL CAMBIO SALVAVIDAS!
 public class ComidaRecomendada {
 
     @Id
@@ -33,7 +24,6 @@ public class ComidaRecomendada {
     @JoinColumn(name = "id_tipo_alimentacion")
     private TipoAlimentacion tipo_alimentacion;
 
-    // --- CAMPOS PARA EL POP-UP DE LA APP (NO SE GUARDAN EN BD) ---
     @Transient
     private String foto_comida;
 
