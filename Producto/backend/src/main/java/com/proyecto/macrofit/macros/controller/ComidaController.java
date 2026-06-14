@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.proyecto.macrofit.macros.model.ComidaDto;
+import com.proyecto.macrofit.macros.model.ComidaDto;//prueba
 import com.proyecto.macrofit.macros.model.entity.ComidaNuevaEntity;
 import com.proyecto.macrofit.macros.service.ComidaService;
 
