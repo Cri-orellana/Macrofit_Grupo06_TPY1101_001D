@@ -1,9 +1,11 @@
 package com.proyecto.macrofit.usuarios.controller;
 
 import com.proyecto.macrofit.usuarios.model.ComidaRecomendada;
+import com.proyecto.macrofit.usuarios.model.RecetaCache;
 import com.proyecto.macrofit.usuarios.model.TipoAlimentacion;
 import com.proyecto.macrofit.usuarios.service.SpoonacularService;
 import com.proyecto.macrofit.usuarios.repository.ComidaRecomendadaRepository;
+import com.proyecto.macrofit.usuarios.repository.RecetaCacheRepository;
 import com.proyecto.macrofit.usuarios.repository.TipoAlimentacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,10 @@ public class NutricionController {
 
     @Autowired
     private SpoonacularService spoonacularService;
+
+    // ── AGREGADO ──
+    @Autowired
+    private RecetaCacheRepository recetaCacheRepo;
 
     @GetMapping("/tipos-dieta")
     public List<TipoAlimentacion> obtenerTiposDieta() {
@@ -95,8 +101,6 @@ public class NutricionController {
         return ResponseEntity.ok(recomendaciones);
     }
 
-    // En NutricionController.java
-
     @PostMapping("/admin/retraducir-cache")
     public ResponseEntity<String> retraducirCache() {
         System.out.println("🔄 Iniciando re-traducción de recetas en caché...");
@@ -104,5 +108,38 @@ public class NutricionController {
         String mensaje = "✅ Re-traducción completada. Recetas actualizadas: " + cantidad;
         System.out.println(mensaje);
         return ResponseEntity.ok(mensaje);
+    }
+
+    @GetMapping("/recetas-cache")
+    public ResponseEntity<List<RecetaCache>> obtenerRecetasCache() {
+        return ResponseEntity.ok(recetaCacheRepo.findAll());
+    }
+
+    @DeleteMapping("/recetas-cache/{id}")
+    public ResponseEntity<Void> eliminarRecetaCache(@PathVariable Integer id) {
+        if (!recetaCacheRepo.existsById(id)) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        recetaCacheRepo.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/recetas-cache/{id}")
+    public ResponseEntity<RecetaCache> editarRecetaCache(@PathVariable Integer id,
+            @RequestBody RecetaCache datos) {
+        Optional<RecetaCache> existente = recetaCacheRepo.findById(id);
+        if (existente.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        RecetaCache r = existente.get();
+        r.setNombre_comida(datos.getNombre_comida());
+        r.setDescripcion_comida(datos.getDescripcion_comida());
+        r.setCantidad_porcion(datos.getCantidad_porcion());
+        r.setCalorias_porcion(datos.getCalorias_porcion());
+        r.setProteina_porcion(datos.getProteina_porcion());
+        r.setCarbohidratos_porcion(datos.getCarbohidratos_porcion());
+        r.setGrasa_porcion(datos.getGrasa_porcion());
+        r.setFoto_comida(datos.getFoto_comida());
+        return ResponseEntity.ok(recetaCacheRepo.save(r));
     }
 }
