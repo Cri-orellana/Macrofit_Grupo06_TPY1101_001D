@@ -13,7 +13,7 @@ import com.proyecto.macrofit.rutinaejercicio.repository.RutinaUsuarioRepository;
 
 @Service
 public class RutinaUsuarioService {
-    
+
     @Autowired
     private RutinaUsuarioRepository repositorioRutinaUsuario;
 
@@ -101,10 +101,11 @@ public class RutinaUsuarioService {
         return false;
     }
 
-    //Conversiones
+    // Conversiones
 
     private RutinaUsuario convertirARutinaUsuario(RutinaUsuarioEntity entidad) {
-        if (entidad == null) return null;
+        if (entidad == null)
+            return null;
 
         RutinaUsuario rutinaUsuario = new RutinaUsuario();
         rutinaUsuario.setIdRutinaUsuario(entidad.getIdRutinaUsuario());
@@ -117,7 +118,8 @@ public class RutinaUsuarioService {
     }
 
     private RutinaUsuarioEntity convertirAEntidad(RutinaUsuario rutinaUsuario) {
-        if (rutinaUsuario == null) return null;
+        if (rutinaUsuario == null)
+            return null;
 
         RutinaUsuarioEntity entidad = new RutinaUsuarioEntity();
         entidad.setIdRutinaUsuario(rutinaUsuario.getIdRutinaUsuario());

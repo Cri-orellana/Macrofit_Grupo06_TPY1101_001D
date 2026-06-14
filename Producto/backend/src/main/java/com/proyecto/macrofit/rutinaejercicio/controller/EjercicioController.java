@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+// --- IMPORTACIONES AGREGADAS (Del Código 1) ---
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import com.proyecto.macrofit.rutinaejercicio.service.EjercicioExcelImportService;
+
 import com.proyecto.macrofit.rutinaejercicio.model.Ejercicio;
 import com.proyecto.macrofit.rutinaejercicio.service.EjercicioService;
 
@@ -25,9 +30,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/ejercicios")
 @Tag(name = "Ejercicios", description = "CRUD y consultas de ejercicios")
 public class EjercicioController {
-    
+
     @Autowired
     private EjercicioService servicioEjercicio;
+
+    // --- SERVICIO AGREGADO (Del Código 1) ---
+    @Autowired
+    private EjercicioExcelImportService ejercicioExcelImportService;
 
     @GetMapping
     @Operation(summary = "Obtener todos los ejercicios")
@@ -62,10 +71,8 @@ public class EjercicioController {
                         zonaMuscular,
                         implemento,
                         nivelDificultad,
-                        musculoObjetivo
-                ),
-                HttpStatus.OK
-        );
+                        musculoObjetivo),
+                HttpStatus.OK);
     }
 
     @GetMapping("/buscar")
@@ -78,6 +85,28 @@ public class EjercicioController {
     @Operation(summary = "Crear un nuevo ejercicio")
     public ResponseEntity<Ejercicio> crear(@RequestBody Ejercicio ejercicio) {
         return new ResponseEntity<>(servicioEjercicio.crearEjercicio(ejercicio), HttpStatus.CREATED);
+    }
+
+    // --- ENDPOINT AGREGADO (Del Código 1) ---
+    @PostMapping(value = "/importar-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Importar ejercicios desde Excel")
+    public ResponseEntity<?> importarExcel(@RequestParam("archivo") MultipartFile archivo) {
+        try {
+            if (archivo.isEmpty()) {
+                return new ResponseEntity<>("El archivo está vacío.", HttpStatus.BAD_REQUEST);
+            }
+
+            int cantidad = ejercicioExcelImportService.importarEjercicios(archivo);
+
+            return new ResponseEntity<>(
+                    "Ejercicios importados correctamente: " + cantidad,
+                    HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    "Error al importar Excel: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/{id}")

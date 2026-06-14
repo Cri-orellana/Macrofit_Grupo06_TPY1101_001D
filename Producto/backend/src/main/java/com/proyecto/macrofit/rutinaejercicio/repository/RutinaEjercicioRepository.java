@@ -8,12 +8,14 @@ import org.springframework.stereotype.Repository;
 import com.proyecto.macrofit.rutinaejercicio.model.Entity.RutinaEjercicioEntity;
 
 @Repository
-public interface RutinaEjercicioRepository extends JpaRepository<RutinaEjercicioEntity,Integer>{
+public interface RutinaEjercicioRepository extends JpaRepository<RutinaEjercicioEntity, Integer> {
 
     List<RutinaEjercicioEntity> findByIdRutinaOrderByOrdenAsc(Integer idRutina);
 
     List<RutinaEjercicioEntity> findByIdEjercicio(Integer idEjercicio);
 
     void deleteByIdRutina(Integer idRutina);
-    
+
+    List<RutinaEjercicioEntity> findByIdRutina(Integer idRutina);
+
 }

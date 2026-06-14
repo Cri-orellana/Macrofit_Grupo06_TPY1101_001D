@@ -79,5 +79,42 @@ public class RutinaController {
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+
+    @GetMapping("/usuario/{idUsuario}")
+    @Operation(summary = "Listar rutinas creadas por un usuario")
+    public ResponseEntity<List<Rutina>> listarPorUsuario(@PathVariable Integer idUsuario) {
+        return ResponseEntity.ok(servicioRutina.listarRutinasPorUsuario(idUsuario));
+    }
+
+    @PostMapping("/catalogo")
+    @Operation(summary = "Crear rutina de catalogo como base")
+    public ResponseEntity<Rutina> crearCatalogo(@RequestBody Rutina rutina) {
+        return new ResponseEntity<>(servicioRutina.crearRutinaCatalogo(rutina), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/usuario/{idUsuario}")
+    @Operation(summary = "Crear rutina en usuario")
+    public ResponseEntity<Rutina> crearPersonal(@PathVariable Integer idUsuario, @RequestBody Rutina rutina) {
+        return new ResponseEntity<>(servicioRutina.crearRutina(rutina, idUsuario), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{idRutina}/usuario/{idUsuario}")
+    @Operation(summary = "Editar rutina personal del usuario")
+    public ResponseEntity<Rutina> editarRutinaPersonal(
+            @PathVariable Integer idRutina,
+            @PathVariable Integer idUsuario,
+            @RequestBody Rutina rutina) {
+        return ResponseEntity.ok(
+                servicioRutina.editarRutinaPersonal(idRutina, idUsuario, rutina));
+    }
+
+    @PostMapping("/{idRutinaBase}/copiar/usuario/{idUsuario}")
+    @Operation(summary = "Copiar rutina base como rutina personal")
+    public ResponseEntity<Rutina> copiarRutinaBaseAUsuario(
+            @PathVariable Integer idRutinaBase,
+            @PathVariable Integer idUsuario) {
+        return new ResponseEntity<>(
+                servicioRutina.copiarRutinaBaseAUsuario(idRutinaBase, idUsuario),
+                HttpStatus.CREATED);
+    }
 }

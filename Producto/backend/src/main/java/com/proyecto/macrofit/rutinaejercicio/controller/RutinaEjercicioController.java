@@ -65,12 +65,20 @@ public class RutinaEjercicioController {
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // --- ENDPOINT PARA DRAG AND DROP ---
     @PutMapping("/bulk")
     @Operation(summary = "Modificar multiples ejercicios a la vez (Drag & Drop)")
     public ResponseEntity<List<RutinaEjercicio>> modificarMultiples(
             @RequestBody List<RutinaEjercicio> rutinasEjercicios) {
         return new ResponseEntity<>(servicioRutinaEjercicio.actualizarMultiples(rutinasEjercicios), HttpStatus.OK);
+    }
+
+    @PutMapping("/rutina/{idRutina}/reemplazar")
+    @Operation(summary = "Reemplazar ejercicios de una rutina")
+    public ResponseEntity<List<RutinaEjercicio>> reemplazarEjerciciosDeRutina(
+            @PathVariable Integer idRutina,
+            @RequestBody List<RutinaEjercicio> ejercicios) {
+        return ResponseEntity.ok(
+                servicioRutinaEjercicio.reemplazarEjerciciosDeRutina(idRutina, ejercicios));
     }
 
     @DeleteMapping("/{id}")

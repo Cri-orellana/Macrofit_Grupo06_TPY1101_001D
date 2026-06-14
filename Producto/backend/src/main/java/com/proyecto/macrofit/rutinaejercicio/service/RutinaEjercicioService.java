@@ -78,7 +78,20 @@ public class RutinaEjercicioService {
         }).orElse(null);
     }
 
-    // --- DRAG AND DROP ---
+    // --- REEMPLAZAR EJERCICIOS DE RUTINA (Del Código 1) ---
+    @Transactional
+    public List<RutinaEjercicio> reemplazarEjerciciosDeRutina(Integer idRutina, List<RutinaEjercicio> ejercicios) {
+        repositorioRutinaEjercicio.deleteByIdRutina(idRutina);
+        return ejercicios.stream()
+                .map(e -> {
+                    e.setIdRutina(idRutina);
+                    return convertirARutinaEjercicio(
+                            repositorioRutinaEjercicio.save(convertirAEntidad(e)));
+                })
+                .toList();
+    }
+
+    // --- DRAG AND DROP (Del Código 2) ---
     @Transactional
     public List<RutinaEjercicio> actualizarMultiples(List<RutinaEjercicio> rutinasActualizadas) {
         return rutinasActualizadas.stream().map(act -> modificarRutinaEjercicio(act.getIdRutinaEjercicio(), act))
