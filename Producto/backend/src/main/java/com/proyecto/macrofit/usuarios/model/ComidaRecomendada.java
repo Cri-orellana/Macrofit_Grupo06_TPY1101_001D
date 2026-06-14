@@ -13,6 +13,7 @@ import jakarta.persistence.Transient;
 import java.util.List;
 
 @Entity
+@Table(name = "receta_cache")
 public class ComidaRecomendada {
 
     @Id
