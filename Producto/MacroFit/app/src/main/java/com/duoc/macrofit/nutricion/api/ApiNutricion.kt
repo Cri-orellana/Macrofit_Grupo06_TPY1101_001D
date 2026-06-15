@@ -23,4 +23,7 @@ interface ApiNutricion {
         @Query("minProteina") minProteina: Float? = null,
         @Query("maxGrasa") maxGrasa: Float? = null
     ): List<ComidaRecomendada>
+
+    @GET("api/nutricion/recetas-cache")
+    suspend fun obtenerRecetasCache(): List<ComidaRecomendada>
 }

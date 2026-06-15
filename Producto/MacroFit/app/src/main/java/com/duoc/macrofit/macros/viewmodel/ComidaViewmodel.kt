@@ -128,4 +128,48 @@ class SeleccionarComidaViewModel : ViewModel() {
         _totalCarbohidratos.value = lista.sumOf { it.carbohidratos }
         _totalGrasas.value = lista.sumOf { it.grasas }
     }
+
+    fun agregarRecetaRecomendada(
+        nombre: String,
+        calorias: Float,
+        proteinas: Float,
+        carbohidratos: Float,
+        grasas: Float,
+        usuarioId: Int
+    ) {
+        viewModelScope.launch {
+            try {
+                val comidaDto = ComidaDto(
+                    barra = "REC-${System.currentTimeMillis()}",
+                    nombre = nombre,
+                    calorias = calorias.toDouble(),
+                    carbohidratos = carbohidratos.toDouble(),
+                    proteinas = proteinas.toDouble(),
+                    grasas = grasas.toDouble()
+                )
+                val response = RetrofitClient.apiMacros.agregarAlDiario(
+                    comidaDto,
+                    100.0,
+                    usuarioId.toString()
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    val comidaProc = response.body()!!
+                    val nuevaComida = ComidaAgregada(
+                        id = comidaProc.id,
+                        porcion = comidaProc.porcion,
+                        nombre = comidaProc.nombre,
+                        calorias = comidaProc.calorias,
+                        proteinas = comidaProc.proteinas,
+                        carbohidratos = comidaProc.carbohidratos,
+                        grasas = comidaProc.grasas
+                    )
+                    val listaActualizada = _comidasAgregadas.value + nuevaComida
+                    _comidasAgregadas.value = listaActualizada
+                    recalcularTotales(listaActualizada)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

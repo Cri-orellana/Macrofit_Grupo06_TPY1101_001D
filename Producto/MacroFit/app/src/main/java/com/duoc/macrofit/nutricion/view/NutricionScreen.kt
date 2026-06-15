@@ -27,9 +27,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.duoc.macrofit.nutricion.model.ComidaRecomendada
 import com.duoc.macrofit.nutricion.viewmodel.NutricionViewModel
+import com.duoc.macrofit.macros.viewmodel.SeleccionarComidaViewModel
+import com.duoc.macrofit.usuarios.utils.SessionManager
 
 @Composable
-fun NutricionScreen(viewModel: NutricionViewModel = viewModel()) {
+fun NutricionScreen(
+    viewModel: NutricionViewModel = viewModel(),
+    macrosViewModel: SeleccionarComidaViewModel = viewModel()
+    ) {
 
     // Variables para controlar lo que el usuario escribe y el teclado
     var textoBusqueda by remember { mutableStateOf("") }
@@ -69,12 +74,15 @@ fun NutricionScreen(viewModel: NutricionViewModel = viewModel()) {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    val dietaActual = viewModel.dietaSeleccionada?.nombre_tipo ?: ""
-
-                    viewModel.buscarRecomendacionesInteligentes(
-                        dieta = dietaActual,
-                        ingredienteBuscado = textoBusqueda
-                    )
+                    val texto = textoBusqueda.trim().lowercase()
+                    viewModel.listaComidas = if (texto.isEmpty()) {
+                        viewModel.todasLasComidas
+                    } else {
+                        viewModel.todasLasComidas.filter {
+                            it.nombre_comida.lowercase().contains(texto) ||
+                                    it.descripcion_comida?.lowercase()?.contains(texto) == true
+                        }
+                    }
                     keyboardController?.hide()
                 }
             ),
@@ -98,12 +106,11 @@ fun NutricionScreen(viewModel: NutricionViewModel = viewModel()) {
                     FilterChip(
                         selected = seleccionado,
                         onClick = {
-                            viewModel.seleccionarDietaYBuscarComidas(dieta)
-
-                            viewModel.buscarRecomendacionesInteligentes(
-                                dieta = dieta.nombre_tipo,
-                                ingredienteBuscado = textoBusqueda
-                            )
+                            if (viewModel.dietaSeleccionada == dieta) {
+                                viewModel.limpiarFiltro()
+                            } else {
+                                viewModel.seleccionarDietaYBuscarComidas(dieta)
+                            }
                         },
                         label = { Text(dieta.nombre_tipo) },
                         colors = FilterChipDefaults.filterChipColors(
@@ -153,7 +160,8 @@ fun NutricionScreen(viewModel: NutricionViewModel = viewModel()) {
     recetaSeleccionada?.let { comidaSeleccionada ->
         PopupReceta(
             comida = comidaSeleccionada,
-            alCerrar = { recetaSeleccionada = null }
+            alCerrar = { recetaSeleccionada = null },
+            macrosViewModel = macrosViewModel
         )
     }
 }
@@ -217,7 +225,9 @@ fun EtiquetaMacro(titulo: String, valor: String) {
 
 //Pop-up de la receta detallada
 @Composable
-fun PopupReceta(comida: ComidaRecomendada, alCerrar: () -> Unit) {
+fun PopupReceta(comida: ComidaRecomendada, alCerrar: () -> Unit, macrosViewModel: SeleccionarComidaViewModel ) {
+    var agregado by remember { mutableStateOf(false) }
+    val usuario = SessionManager.usuarioActual
     Dialog(
         onDismissRequest = { alCerrar() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -301,10 +311,40 @@ fun PopupReceta(comida: ComidaRecomendada, alCerrar: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón para Cerrar el Pop-up
+                Button(
+                    onClick = {
+                        usuario?.id?.let { userId ->
+                            macrosViewModel.agregarRecetaRecomendada(
+                                nombre        = comida.nombre_comida,
+                                calorias      = comida.calorias_porcion,
+                                proteinas     = comida.proteina_porcion,
+                                carbohidratos = comida.carbohidratos_porcion,
+                                grasas        = comida.grasa_porcion,
+                                usuarioId     = userId
+                            )
+                            agregado = true
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (agregado)
+                            MaterialTheme.colorScheme.secondary
+                        else
+                            MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(if (agregado) "✓ Añadido al diario" else "Añadir al diario")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Button(
                     onClick = { alCerrar() },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 ) {
                     Text("Volver")
                 }
