@@ -22,7 +22,7 @@ public class HistorialController {
     }
 
     @GetMapping("/Usuario/{UserId}")
-    public ResponseEntity<List<ComidaHistorialEntity>> obtenerHistorial(@PathVariable Long userId) {
+    public ResponseEntity<List<ComidaHistorialEntity>> obtenerHistorial(@PathVariable("userId") Long userId) {
         var lista = cierreService.obtenerHistorial(userId);
         if (lista.isEmpty()) {
             return ResponseEntity.noContent().build();
