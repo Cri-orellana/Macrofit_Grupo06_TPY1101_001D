@@ -21,7 +21,7 @@ public class HistorialController {
         this.cierreService = cierreService;
     }
 
-    @GetMapping("/Usuario/{UserId}")
+    @GetMapping("/Usuario/{userId}")
     public ResponseEntity<List<ComidaHistorialEntity>> obtenerHistorial(@PathVariable("userId") Long userId) {
         var lista = cierreService.obtenerHistorial(userId);
         if (lista.isEmpty()) {
