@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import lombok.Data;
 
 @Entity
@@ -16,16 +17,16 @@ public class ComidaHistorialEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "userId")
     private Long userId;
+
     private String code;
     private String nombre;
     private Double porcion;
-    // Macros
     private Double calorias;
     private Double carbohidratos;
     private Double proteinas;
     private Double grasas;
-
     private LocalDateTime fechareg;
-
 }
