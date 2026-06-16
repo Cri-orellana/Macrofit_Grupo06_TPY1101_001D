@@ -9,6 +9,7 @@ public class Rutina {
     private Integer idUsuarioCreador;
     private String nombreRutina;
     private String descripcion;
+    private Integer cantidadDias;
     private Boolean esBase;
     private Boolean activoCatalogo;
 

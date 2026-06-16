@@ -13,7 +13,7 @@ import com.proyecto.macrofit.rutinaejercicio.repository.RutinaUsuarioRepository;
 
 @Service
 public class RutinaUsuarioService {
-
+    
     @Autowired
     private RutinaUsuarioRepository repositorioRutinaUsuario;
 
@@ -52,7 +52,11 @@ public class RutinaUsuarioService {
                 .orElse(null);
     }
 
+    @Transactional
     public RutinaUsuario asignarRutinaUsuario(RutinaUsuario rutinaUsuario) {
+        System.out.println(">>> idUsuario recibido: " + rutinaUsuario.getIdUsuario());
+
+        desactivarRutinasActivasDelUsuario(rutinaUsuario.getIdUsuario());
         if (rutinaUsuario.getActivo() == null) {
             rutinaUsuario.setActivo(true);
         }
@@ -60,6 +64,7 @@ public class RutinaUsuarioService {
         RutinaUsuarioEntity guardada = repositorioRutinaUsuario.save(convertirAEntidad(rutinaUsuario));
         return convertirARutinaUsuario(guardada);
     }
+
 
     public RutinaUsuario modificarAsignacion(Integer id, RutinaUsuario actualizada) {
         return repositorioRutinaUsuario.findById(id).map(entidad -> {
@@ -101,11 +106,23 @@ public class RutinaUsuarioService {
         return false;
     }
 
-    // Conversiones
+    public void desactivarRutinasActivasDelUsuario(Integer idUsuario) {
+        List<RutinaUsuarioEntity> activas = repositorioRutinaUsuario.findByIdUsuarioAndActivoTrue(idUsuario);
+
+        System.out.println(">>> Rutinas activas encontradas: " + activas.size());
+
+        activas.forEach(ru -> {
+            ru.setActivo(false);
+            ru.setFechaFin(LocalDate.now()); 
+        });
+
+        repositorioRutinaUsuario.saveAll(activas);
+    }
+
+    //Conversiones
 
     private RutinaUsuario convertirARutinaUsuario(RutinaUsuarioEntity entidad) {
-        if (entidad == null)
-            return null;
+        if (entidad == null) return null;
 
         RutinaUsuario rutinaUsuario = new RutinaUsuario();
         rutinaUsuario.setIdRutinaUsuario(entidad.getIdRutinaUsuario());
@@ -118,8 +135,7 @@ public class RutinaUsuarioService {
     }
 
     private RutinaUsuarioEntity convertirAEntidad(RutinaUsuario rutinaUsuario) {
-        if (rutinaUsuario == null)
-            return null;
+        if (rutinaUsuario == null) return null;
 
         RutinaUsuarioEntity entidad = new RutinaUsuarioEntity();
         entidad.setIdRutinaUsuario(rutinaUsuario.getIdRutinaUsuario());

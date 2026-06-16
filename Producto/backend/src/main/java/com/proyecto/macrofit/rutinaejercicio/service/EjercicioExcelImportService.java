@@ -19,7 +19,7 @@ public class EjercicioExcelImportService {
         int importados = 0;
 
         try (InputStream inputStream = archivo.getInputStream();
-                Workbook workbook = WorkbookFactory.create(inputStream)) {
+             Workbook workbook = WorkbookFactory.create(inputStream)) {
 
             Sheet hoja = workbook.getSheet("Exercises");
 
@@ -55,6 +55,12 @@ public class EjercicioExcelImportService {
                     continue;
                 }
 
+                String videoEjercicio = obtenerTextoOHipervinculo(fila, columnas, "Short YouTube Demonstration");
+
+                if (videoEjercicio == null || videoEjercicio.isBlank()) {
+                    continue;
+                }
+
                 Ejercicio ejercicio = new Ejercicio();
 
                 ejercicio.setIdEjercicio(null);
@@ -63,7 +69,16 @@ public class EjercicioExcelImportService {
                 ejercicio.setVideoEjercicio(obtenerTextoOHipervinculo(fila, columnas, "Short YouTube Demonstration"));
                 ejercicio.setNivelDificultad(traducirDificultad(obtenerTexto(fila, columnas, "Difficulty Level")));
                 ejercicio.setMusculoObjetivo(traducirMusculo(obtenerTexto(fila, columnas, "Target Muscle Group")));
-                ejercicio.setImplemento(traducirImplemento(obtenerTexto(fila, columnas, "Primary Equipment")));
+
+                String implementoTraducido = traducirImplemento(
+                        obtenerTexto(fila, columnas, "Primary Equipment")
+                );
+
+                if (implementoTraducido == null) {
+                    continue; 
+                }
+
+                ejercicio.setImplemento(implementoTraducido);
                 ejercicio.setZonaMuscular(traducirZonaMuscular(obtenerTexto(fila, columnas, "Body Region")));
 
                 ejercicio.setDescripcion(null);
@@ -106,41 +121,37 @@ public class EjercicioExcelImportService {
         Integer index = columnas.get(nombreColumna);
 
         if (index == null) {
-            return null;
-        }
+            return null;}
 
         Cell celda = fila.getCell(index);
 
         if (celda == null) {
-            return null;
-        }
+            return null;}
 
         DataFormatter formatter = new DataFormatter();
         String valor = formatter.formatCellValue(celda);
 
         if (valor == null || valor.trim().isEmpty()) {
-            return null;
-        }
+            return null;}
 
         return valor.trim();
     }
 
     private String traducirDificultad(String valor) {
-        if (valor == null)
-            return null;
+        if (valor == null) return null;
 
         return switch (valor.trim().toLowerCase()) {
             case "novice" -> "Sedentario";
             case "beginner" -> "Ligero";
             case "intermediate" -> "Moderado";
             case "advanced" -> "Intenso";
+            case "expert" -> "Intenso";
             default -> capitalizar(valor);
         };
     }
 
     private String traducirZonaMuscular(String valor) {
-        if (valor == null)
-            return null;
+        if (valor == null) return null;
 
         return switch (valor.trim().toLowerCase()) {
             case "upper body" -> "Tren superior";
@@ -152,8 +163,7 @@ public class EjercicioExcelImportService {
     }
 
     private String traducirMusculo(String valor) {
-        if (valor == null)
-            return null;
+        if (valor == null) return null;
 
         return switch (valor.trim().toLowerCase()) {
             case "abdominals" -> "Abdominales";
@@ -178,54 +188,62 @@ public class EjercicioExcelImportService {
     }
 
     private String traducirImplemento(String valor) {
-        if (valor == null)
-            return null;
-
-        return switch (valor.trim().toLowerCase()) {
-            case "bodyweight" -> "Peso corporal";
-            case "dumbbell" -> "Mancuerna";
-            case "dumbbells" -> "Mancuernas";
-            case "barbell" -> "Barra";
-            case "kettlebell" -> "Kettlebell";
-            case "kettlebells" -> "Kettlebells";
-            case "cable" -> "Polea";
-            case "machine" -> "Máquina";
-            case "resistance band" -> "Banda elástica";
-            case "resistance bands" -> "Bandas elásticas";
-            case "medicine ball" -> "Balón medicinal";
-            case "stability ball" -> "Balón de estabilidad";
-            case "bench" -> "Banco";
-            case "pull up bar" -> "Barra de dominadas";
-            case "suspension trainer" -> "Suspensión";
-            case "none" -> "Sin implemento";
-            default -> capitalizar(valor);
-        };
+    if (valor == null || valor.isBlank()) {
+        return null;
     }
 
-    // Leer hipervinculo
+    return switch (valor.trim().toLowerCase()) {
+        case "ab wheel" -> "Rueda abdominal";
+        case "barbell" -> "Barra";
+        case "battle ropes" -> "Cuerdas de batalla";
+        case "bodyweight" -> "Peso corporal";
+        case "bulgarian bag" -> "Saco búlgaro";
+        case "cable" -> "Polea";
+        case "climbing rope" -> "Cuerda de escalada";
+        case "dumbbell" -> "Mancuerna";
+        case "ez bar" -> "Barra EZ";
+        case "gymnastic rings" -> "Anillas gimnásticas";
+        case "heavy sandbag" -> "Saco de arena";
+        case "kettlebell" -> "Kettlebell";
+        case "landmine" -> "Landmine";
+        case "medicine ball" -> "Balón medicinal";
+        case "miniband" -> "Minibanda";
+        case "parallette bars" -> "Barras paralelas";
+        case "pull up bar" -> "Barra de dominadas";
+        case "resistance band" -> "Banda elástica";
+        case "sandbag" -> "Saco de arena";
+        case "slamball" -> "Balón de golpeo";
+        case "stability ball" -> "Balón de estabilidad";
+        case "superband" -> "Superbanda";
+        case "suspension trainer" -> "TRX";
+        case "tire" -> "Neumático";
+        case "trap bar" -> "Barra hexagonal";
+        case "wall ball" -> "Balón medicinal";
+        case "weight plate" -> "Disco de peso";
+        default -> null;
+    };
+}
+
+    //Leer hipervinculo
     private String obtenerTextoOHipervinculo(Row fila, Map<String, Integer> columnas, String nombreColumna) {
         Integer index = columnas.get(nombreColumna);
 
         if (index == null) {
-            return null;
-        }
+            return null;}
         Cell celda = fila.getCell(index);
 
         if (celda == null) {
-            return null;
-        }
+            return null;}
         Hyperlink hyperlink = celda.getHyperlink();
 
         if (hyperlink != null && hyperlink.getAddress() != null && !hyperlink.getAddress().isBlank()) {
-            return hyperlink.getAddress().trim();
-        }
+            return hyperlink.getAddress().trim();}
 
         DataFormatter formatter = new DataFormatter();
         String valor = formatter.formatCellValue(celda);
 
         if (valor == null || valor.trim().isEmpty()) {
-            return null;
-        }
+            return null;}
         return valor.trim();
     }
 
