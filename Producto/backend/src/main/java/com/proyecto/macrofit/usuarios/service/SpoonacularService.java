@@ -20,6 +20,9 @@ public class SpoonacularService {
     @Autowired
     private RecetaCacheRepository cacheRepo;
 
+    @Autowired
+    private LibreTranslateService libreTranslate;
+
     @Value("${spoonacular.api.key}")
     private String claveApi;
 
@@ -40,7 +43,6 @@ public class SpoonacularService {
                 maxCarbs, minProt, maxGrasa);
     }
 
-    // --- Convierte RecetaCache → ComidaRecomendada para devolver a la app ---
     private ComidaRecomendada cacheAComida(RecetaCache cache) {
         ComidaRecomendada c = new ComidaRecomendada();
         c.setId_comida(cache.getSpoonacularId());
@@ -57,11 +59,9 @@ public class SpoonacularService {
         return c;
     }
 
-    // TRADUCTOR DE DIETAS
     private String traducirFiltroDieta(String dietaEspanol) {
-        if (dietaEspanol == null || dietaEspanol.trim().isEmpty()) {
+        if (dietaEspanol == null || dietaEspanol.trim().isEmpty())
             return "";
-        }
         String dietaLimpia = dietaEspanol.toLowerCase();
         if (dietaLimpia.contains("vegetariana"))
             return "vegetarian";
@@ -74,31 +74,8 @@ public class SpoonacularService {
         return "";
     }
 
-    // TRADUCTOR DE TEXTOS Y LIMPIEZA
     private String traducirTituloAlEspanol(String textoIngles) {
-        if (textoIngles == null || textoIngles.trim().isEmpty())
-            return "";
-        try {
-            // Limpiar etiquetas HTML raras que mande la API
-            String textoLimpio = textoIngles.replaceAll("<[^>]*>", "");
-
-            String url = "https://api.mymemory.translated.net/get?q=" + textoLimpio
-                    + "&langpair=en|es&de=cristianj.orellanaa@gmail.com";
-            Map<String, Object> respuestaTraduccion = restTemplate.getForObject(url, Map.class);
-
-            if (respuestaTraduccion != null && respuestaTraduccion.containsKey("responseData")) {
-                Map<String, Object> datosRespuesta = (Map<String, Object>) respuestaTraduccion.get("responseData");
-                String textoTraducido = (String) datosRespuesta.get("translatedText");
-
-                if (textoTraducido != null && !textoTraducido.contains("INVALID LANGUAGE")
-                        && !textoTraducido.contains("MYMEMORY")) {
-                    return textoTraducido;
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("⚠️ Error traduciendo texto: " + e.getMessage());
-        }
-        return textoIngles.replaceAll("<[^>]*>", "");
+        return libreTranslate.traducirEnEsp(textoIngles);
     }
 
     public int retraducirRecetasEnIngles() {
@@ -106,65 +83,39 @@ public class SpoonacularService {
         int traducidas = 0;
 
         for (RecetaCache receta : todas) {
+            String nombreOriginal = receta.getNombre_comida();
 
-            boolean necesitaTraduccion = false;
+            receta.setNombre_comida(traducirTituloAlEspanol(nombreOriginal));
 
-            // Detectar si el nombre parece inglés (contiene palabras comunes en inglés)
-            String nombre = receta.getNombre_comida();
-            if (nombre != null && esIngles(nombre)) {
-                receta.setNombre_comida(traducirTituloAlEspanol(nombre));
-                necesitaTraduccion = true;
-            }
-
-            // Re-traducir ingredientes
             List<String> ings = receta.getIngredientes();
-            if (ings != null && !ings.isEmpty() && esIngles(ings.get(0))) {
+            if (ings != null && !ings.isEmpty()) {
                 List<String> ingsTraducidos = new ArrayList<>();
                 for (String ing : ings) {
                     ingsTraducidos.add(traducirTituloAlEspanol(ing));
                 }
                 receta.setIngredientes(ingsTraducidos);
-                necesitaTraduccion = true;
             }
 
-            // Re-traducir pasos de preparación
             List<String> pasos = receta.getPreparacion();
-            if (pasos != null && !pasos.isEmpty() && esIngles(pasos.get(0))) {
+            if (pasos != null && !pasos.isEmpty()) {
                 List<String> pasosTraducidos = new ArrayList<>();
                 for (String paso : pasos) {
                     pasosTraducidos.add(traducirTituloAlEspanol(paso));
                 }
                 receta.setPreparacion(pasosTraducidos);
-                necesitaTraduccion = true;
             }
 
-            if (necesitaTraduccion) {
-                cacheRepo.save(receta);
-                traducidas++;
-                System.out.println("✅ Traducida: " + nombre);
+            cacheRepo.save(receta);
+            traducidas++;
+            System.out.println("✅ Traducida: " + nombreOriginal + " → " + receta.getNombre_comida());
 
-                // Pausa de 1 segundo entre recetas para no saturar MyMemory
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ignored) {
             }
         }
 
         return traducidas;
-    }
-
-    // Detector simple de inglés: busca palabras muy comunes en recetas en inglés
-    private boolean esIngles(String texto) {
-        if (texto == null || texto.isBlank())
-            return false;
-        String lower = texto.toLowerCase();
-        return lower.contains(" the ") || lower.contains(" with ") ||
-                lower.contains(" and ") || lower.contains(" of ") ||
-                lower.contains(" in ") || lower.contains(" to ") ||
-                lower.contains(" cup") || lower.contains(" tbsp") ||
-                lower.contains(" tsp") || lower.contains("chicken") ||
-                lower.contains("rice") || lower.contains("sauce");
     }
 
     public List<ComidaRecomendada> buscarRecetasPersonalizadas(
@@ -177,7 +128,6 @@ public class SpoonacularService {
         String cacheKey = generarCacheKey(tipoDieta, ingredientes,
                 maxCarbohidratos, minProteina, maxGrasa);
 
-        // Si ya hay resultados para esta búsqueda, devolver directo
         List<RecetaCache> enCache = cacheRepo.findByCacheKey(cacheKey);
         if (!enCache.isEmpty()) {
             System.out.println("✅ Cache HIT: " + cacheKey);
@@ -186,7 +136,6 @@ public class SpoonacularService {
 
         System.out.println("🌐 Cache MISS: " + cacheKey);
 
-        // Llamar a Spoonacular + traducir (tu código actual sin cambios)
         List<ComidaRecomendada> listaRecomendaciones = new ArrayList<>();
 
         try {
@@ -235,7 +184,6 @@ public class SpoonacularService {
                     nuevaComida.setIngredientes_lista(listaIng);
 
                     List<String> listaPasos = new ArrayList<>();
-
                     if (recetaIngles.containsKey("analyzedInstructions")) {
                         List<Map<String, Object>> instructions = (List<Map<String, Object>>) recetaIngles
                                 .get("analyzedInstructions");
@@ -266,7 +214,6 @@ public class SpoonacularService {
 
                     nuevaComida.setPreparacion_lista(listaPasos);
 
-                    // 4. Macros y Peso
                     Map<String, Object> nutricion = (Map<String, Object>) recetaIngles.get("nutrition");
                     if (nutricion != null) {
                         if (nutricion.containsKey("weightPerServing")) {
@@ -287,7 +234,6 @@ public class SpoonacularService {
                                 for (Map<String, Object> nutriente : nutrientes) {
                                     String nombreNutriente = (String) nutriente.get("name");
                                     Float cantidad = ((Number) nutriente.get("amount")).floatValue();
-
                                     switch (nombreNutriente) {
                                         case "Calories":
                                             nuevaComida.setCalorias_porcion(cantidad);
@@ -306,14 +252,12 @@ public class SpoonacularService {
                             }
                         }
                     }
+
                     listaRecomendaciones.add(nuevaComida);
                 }
             }
 
-            // Guardar las recetas, verificando que no existan previamente
             for (ComidaRecomendada comida : listaRecomendaciones) {
-
-                // ✅ Si esta receta ya existe en cache, no la vuelvas a guardar
                 if (cacheRepo.existsBySpoonacularId(comida.getId_comida())) {
                     System.out.println("⏭️ Ya existe en cache: " + comida.getNombre_comida());
                     continue;
@@ -333,7 +277,7 @@ public class SpoonacularService {
                 cache.setIngredientes(comida.getIngredientes_lista());
                 cache.setPreparacion(comida.getPreparacion_lista());
                 cacheRepo.save(cache);
-                System.out.println("💾 Guardada: " + comida.getNombre_comida());
+                System.out.println("💾 Guardada en español: " + comida.getNombre_comida());
             }
 
         } catch (Exception e) {
