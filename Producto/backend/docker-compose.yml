@@ -37,6 +37,8 @@ services:
       - DB_PASSWORD=password123
       - API_KEY=2cc1d2610130469cb33eed6cc81abd0e
       - API_URL=https://api.spoonacular.com/recipes/complexSearch
+      - JWT_SECRET=qGMVNiKcFPRpEhbfEpOhXmdCQvLFm01Oc266AKtCIRY=
+      - JWT_EXPIRATION_MS=86400000             
     depends_on:
       db:
         condition: service_healthy
