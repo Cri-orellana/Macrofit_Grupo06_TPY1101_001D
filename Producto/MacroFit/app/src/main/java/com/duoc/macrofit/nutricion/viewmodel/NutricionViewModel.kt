@@ -1,5 +1,6 @@
 package com.duoc.macrofit.nutricion.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -43,10 +44,14 @@ class NutricionViewModel : ViewModel() {
             mensajeError = null
             try {
                 val respuesta = RetrofitClient.apiNutricion.obtenerRecetasCache()
+                Log.d("NUTRICION", "✅ Recetas cache recibidas: ${respuesta.size}")
+
                 val mapeadas = mapearRecetas(respuesta)
                 todasLasComidas = mapeadas
                 listaComidas = mapeadas
+
             } catch (e: Exception) {
+                Log.e("NUTRICION", "❌ Error recetas cache: ${e.message}", e)
                 mensajeError = "Error al cargar recetas: ${e.message}"
             } finally {
                 cargando = false
@@ -85,6 +90,8 @@ class NutricionViewModel : ViewModel() {
             cargando = true
             mensajeError = null
             try {
+                Log.d("NUTRICION", "🔍 Llamando a /recomendaciones con dieta=$dieta, ingredientes=$ingredienteBuscado, carbos=$faltanCarbos, protes=$faltaProtes, grasas=$faltanGrasas")
+
                 val respuesta = RetrofitClient.apiNutricion.obtenerRecomendaciones(
                     tipoDieta = dieta,
                     ingredientes = ingredienteBuscado,
@@ -92,8 +99,12 @@ class NutricionViewModel : ViewModel() {
                     minProteina = faltaProtes,
                     maxGrasa = faltanGrasas
                 )
+
+                Log.d("NUTRICION", "✅ Recomendaciones recibidas: ${respuesta.size}")
                 listaComidas = mapearRecetas(respuesta)
+
             } catch (e: Exception) {
+                Log.e("NUTRICION", "❌ Error recomendaciones: ${e.message}", e)
                 mensajeError = "Error al buscar recetas: ${e.message}"
             } finally {
                 cargando = false

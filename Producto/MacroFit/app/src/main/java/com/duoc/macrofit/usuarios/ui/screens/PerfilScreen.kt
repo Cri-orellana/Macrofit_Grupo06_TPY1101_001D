@@ -18,9 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.macrofit.usuarios.utils.SessionManager
 import com.duoc.macrofit.usuarios.viewmodel.PerfilViewModel
-
+import com.duoc.macrofit.usuarios.utils.SessionManager
 @Composable
 fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
 

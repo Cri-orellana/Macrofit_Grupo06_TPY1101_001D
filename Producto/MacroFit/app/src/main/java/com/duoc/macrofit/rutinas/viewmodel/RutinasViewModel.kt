@@ -11,12 +11,12 @@ import com.duoc.macrofit.rutinas.model.Ejercicio
 import com.duoc.macrofit.rutinas.model.Rutina
 import com.duoc.macrofit.rutinas.model.RutinaEjercicio
 import com.duoc.macrofit.rutinas.model.RutinaUsuario
-import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import android.util.Log
+import com.duoc.macrofit.usuarios.utils.SessionManager
 
 // Modelo auxiliar para mostrar ejercicio + sus parámetros juntos en la UI
 data class EjercicioEnRutina(
@@ -357,6 +357,18 @@ class RutinasViewModel : ViewModel() {
                 cargando = false
             }
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Función integrada desde el primer bloque de código
+    // ─────────────────────────────────────────────────────────────────────────────
+    fun obtenerEjerciciosPorDia(): Map<Int, List<EjercicioEnRutina>> {
+        return ejerciciosEnRutina
+            .groupBy { it.parametros.dia ?: 1 }
+            .toSortedMap()
+            .mapValues { entry ->
+                entry.value.sortedBy { it.parametros.orden ?: 0 }
+            }
     }
 
     fun cerrarCatalogo() {

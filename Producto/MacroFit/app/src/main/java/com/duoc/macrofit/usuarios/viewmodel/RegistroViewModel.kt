@@ -10,11 +10,9 @@ import com.duoc.macrofit.usuarios.api.RetrofitClient
 import com.duoc.macrofit.usuarios.model.NvActividad
 import com.duoc.macrofit.usuarios.model.Objetivo
 import com.duoc.macrofit.usuarios.model.RegistroRequest
-import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 import android.util.Log
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import com.duoc.macrofit.usuarios.utils.SessionManager
 
 class RegistroViewModel : ViewModel() {
 
@@ -60,9 +58,7 @@ class RegistroViewModel : ViewModel() {
         errorMessage = null
         when (pasoActual) {
             1 -> {
-                // Al menos 1 letra, al menos 1 número, mínimo 8 caracteres
                 val passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$".toRegex()
-
                 if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) {
                     errorMessage = "Completa tus datos"
                 } else if (!contrasena.matches(passwordRegex)) {
@@ -91,14 +87,14 @@ class RegistroViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val nuevoRegistro = RegistroRequest(
-                    nom_usuario = nombre,
-                    correo = correo,
-                    contrasena = contrasena,
-                    edad = edad.toIntOrNull() ?: 0,
-                    peso = peso.toFloatOrNull() ?: 0f,
-                    altura = altura.toIntOrNull() ?: 0,
-                    sexo = if (sexo == "M") "Masculino" else "Femenino",
-                    id_objetivo = objetivoSeleccionado!!.id_objetivo,
+                    nom_usuario     = nombre,
+                    correo          = correo,
+                    contrasena      = contrasena,
+                    edad            = edad.toIntOrNull() ?: 0,
+                    peso            = peso.toFloatOrNull() ?: 0f,
+                    altura          = altura.toIntOrNull() ?: 0,
+                    sexo            = if (sexo == "M") "Masculino" else "Femenino",
+                    id_objetivo     = objetivoSeleccionado!!.id_objetivo,
                     id_nv_actividad = actividadSeleccionada!!.id_nv_actividad
                 )
 

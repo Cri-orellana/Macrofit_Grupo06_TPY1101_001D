@@ -1,6 +1,7 @@
 package com.duoc.macrofit.usuarios.api
 
 import com.duoc.macrofit.usuarios.model.LoginRequest
+import com.duoc.macrofit.usuarios.model.LoginResponse
 import com.duoc.macrofit.usuarios.model.NvActividad
 import com.duoc.macrofit.usuarios.model.Objetivo
 import com.duoc.macrofit.usuarios.model.RegistroRequest
@@ -15,7 +16,7 @@ import retrofit2.http.Path
 interface MacrofitApi {
 
     @POST("api/usuarios/login")
-    suspend fun login(@Body credenciales: LoginRequest): Response<Usuario>
+    suspend fun login(@Body credenciales: LoginRequest): Response<LoginResponse>
 
     @GET("api/catalogos/objetivos")
     suspend fun obtenerObjetivos(): Response<List<Objetivo>>
@@ -31,4 +32,7 @@ interface MacrofitApi {
         @Path("id") idUsuario: Int,
         @Body datosActualizados: Usuario
     ): Response<Usuario>
+
+    @GET("api/usuarios/{id}")
+    suspend fun obtenerUsuarioPorId(@Path("id") id: Int): Response<Usuario>
 }

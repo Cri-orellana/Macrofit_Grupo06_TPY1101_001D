@@ -1,6 +1,8 @@
 package com.duoc.macrofit.rutinas.view.componentes
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -24,13 +26,15 @@ import com.duoc.macrofit.rutinas.viewmodel.EjercicioSeleccionado
  * @param numero   Posición en la lista (orden visual).
  * @param onEliminar Callback para quitarlo de la lista.
  * @param onCambio Callback cuando el usuario edita algún parámetro.
+ * @param onCambiarDia Callback para asignar el ejercicio a un día específico.
  */
 @Composable
 fun EjercicioSeleccionadoCard(
     item: EjercicioSeleccionado,
     numero: Int,
     onEliminar: () -> Unit,
-    onCambio: (EjercicioSeleccionado) -> Unit
+    onCambio: (EjercicioSeleccionado) -> Unit,
+    onCambiarDia: (Int) -> Unit
 ) {
     val verde = MaterialTheme.colorScheme.primary
     val colorFondo = Color(0xFF1E1E1E)
@@ -94,6 +98,45 @@ fun EjercicioSeleccionadoCard(
                         contentDescription = "Eliminar",
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Nueva sección agregada: Selección de Día Asignado
+            Text(
+                text = "Día asignado",
+                color = Color.Gray,
+                style = MaterialTheme.typography.labelSmall
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                (1..7).forEach { dia ->
+                    val seleccionado = item.dia == dia
+
+                    FilterChip(
+                        selected = seleccionado,
+                        onClick = { onCambiarDia(dia) },
+                        label = { Text("Día $dia") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = verde.copy(alpha = 0.2f),
+                            selectedLabelColor = verde,
+                            labelColor = Color.LightGray
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = seleccionado,
+                            selectedBorderColor = verde,
+                            borderColor = Color(0xFF444444)
+                        )
                     )
                 }
             }

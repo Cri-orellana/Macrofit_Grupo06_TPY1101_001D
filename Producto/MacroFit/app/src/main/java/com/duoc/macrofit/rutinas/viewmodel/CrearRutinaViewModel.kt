@@ -9,23 +9,25 @@ import androidx.lifecycle.viewModelScope
 import com.duoc.macrofit.rutinas.api.RetrofitRutinas
 import com.duoc.macrofit.rutinas.model.CrearRutinaRequest
 import com.duoc.macrofit.rutinas.model.Ejercicio
+import com.duoc.macrofit.rutinas.model.RutinaEjercicio
 import com.duoc.macrofit.rutinas.model.RutinaEjercicioRequest
 import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 
 /**
  * Representa un ejercicio seleccionado para la rutina que se está creando,
- * junto con sus parámetros editables.
+ * junto con sus parámetros editables y el día asignado.
  */
 data class EjercicioSeleccionado(
     val idEjercicio: Int,
     val nombreEjercicio: String,
+    val dia: Int = 1,
+    val orden: Int? = null,
     val series: Int? = 3,
     val repeticiones: Int? = 10,
     val tiempoSeg: Int? = null,
     val pesoReferencia: Float? = null
 )
-
 
 class CrearRutinaViewModel : ViewModel() {
 
@@ -65,7 +67,6 @@ class CrearRutinaViewModel : ViewModel() {
             coincideNombre && coincideZona
         }
 
-
     // ── Ejercicios seleccionados ──────────────────────────────────────────────
     var ejerciciosSeleccionados by mutableStateOf<List<EjercicioSeleccionado>>(emptyList())
 
@@ -91,6 +92,16 @@ class CrearRutinaViewModel : ViewModel() {
 
     fun eliminarEjercicio(idEjercicio: Int) {
         ejerciciosSeleccionados = ejerciciosSeleccionados.filter { it.idEjercicio != idEjercicio }
+    }
+
+    fun cambiarDiaEjercicio(idEjercicio: Int, nuevoDia: Int) {
+        ejerciciosSeleccionados = ejerciciosSeleccionados.map { ejercicio ->
+            if (ejercicio.idEjercicio == idEjercicio) {
+                ejercicio.copy(dia = nuevoDia)
+            } else {
+                ejercicio
+            }
+        }
     }
 
     // ── Control de pasos ──────────────────────────────────────────────────────
@@ -175,12 +186,13 @@ class CrearRutinaViewModel : ViewModel() {
 
                 val idRutinaCreada = rutinaResp.body()!!.idRutina
 
-                //Agregar cada ejercicio con sus parametros
+                //Agregar cada ejercicio con sus parametros, respetando el día
                 ejerciciosSeleccionados.forEachIndexed { index, sel ->
                     val ejercicioResp = api.agregarEjercicioARutina(
                         RutinaEjercicioRequest(
                             idRutina = idRutinaCreada,
                             idEjercicio = sel.idEjercicio,
+                            dia = sel.dia,
                             orden = index + 1,
                             series = sel.series,
                             repeticiones = sel.repeticiones,
@@ -239,14 +251,20 @@ class CrearRutinaViewModel : ViewModel() {
 
                 val ejerciciosRutina = respRutinaEjercicios.body() ?: emptyList()
 
+                // Se ordena por día y luego por orden
                 ejerciciosSeleccionados = ejerciciosRutina
-                    .sortedBy { it.orden }
+                    .sortedWith(
+                        compareBy<RutinaEjercicio> { it.dia ?: 1 }
+                            .thenBy { it.orden ?: 0 }
+                    )
                     .map { re ->
                         val ejercicio = todosLosEjercicios.find { it.idEjercicio == re.idEjercicio }
 
                         EjercicioSeleccionado(
                             idEjercicio = re.idEjercicio,
                             nombreEjercicio = ejercicio?.nombreEjercicio ?: "Ejercicio #${re.idEjercicio}",
+                            dia = re.dia ?: 1,
+                            orden = re.orden,
                             series = re.series,
                             repeticiones = re.repeticiones,
                             tiempoSeg = re.tiempoSeg,
@@ -293,17 +311,25 @@ class CrearRutinaViewModel : ViewModel() {
                     errorMensaje = "No se pudo editar la rutina. Código: ${respRutina.code()}"
                     return@launch
                 }
-                val ejerciciosRequest = ejerciciosSeleccionados.mapIndexed { index, sel ->
-                    RutinaEjercicioRequest(
-                        idRutina = idRutina,
-                        idEjercicio = sel.idEjercicio,
-                        orden = index + 1,
-                        series = sel.series,
-                        repeticiones = sel.repeticiones,
-                        tiempoSeg = sel.tiempoSeg,
-                        pesoReferencia = sel.pesoReferencia
-                    )
-                }
+
+                // Se agrupan los ejercicios por día para mantener el orden correcto por jornada
+                val ejerciciosRequest = ejerciciosSeleccionados
+                    .groupBy { it.dia }
+                    .flatMap { (dia, ejerciciosDelDia) ->
+                        ejerciciosDelDia.mapIndexed { index, sel ->
+                            RutinaEjercicioRequest(
+                                idRutina = idRutina,
+                                idEjercicio = sel.idEjercicio,
+                                dia = dia,
+                                orden = index + 1,
+                                series = sel.series,
+                                repeticiones = sel.repeticiones,
+                                tiempoSeg = sel.tiempoSeg,
+                                pesoReferencia = sel.pesoReferencia
+                            )
+                        }
+                    }
+
                 val respEjercicios = api.reemplazarEjerciciosDeRutina(
                     idRutina = idRutina,
                     ejercicios = ejerciciosRequest

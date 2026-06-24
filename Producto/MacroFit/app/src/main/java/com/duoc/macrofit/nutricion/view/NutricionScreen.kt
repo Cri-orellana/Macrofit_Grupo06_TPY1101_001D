@@ -74,14 +74,13 @@ fun NutricionScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    val texto = textoBusqueda.trim().lowercase()
-                    viewModel.listaComidas = if (texto.isEmpty()) {
-                        viewModel.todasLasComidas
+                    val texto = textoBusqueda.trim()
+                    if (texto.isEmpty()) {
+                        viewModel.limpiarFiltro()
                     } else {
-                        viewModel.todasLasComidas.filter {
-                            it.nombre_comida.lowercase().contains(texto) ||
-                                    it.descripcion_comida?.lowercase()?.contains(texto) == true
-                        }
+                        viewModel.buscarRecomendacionesInteligentes(
+                            ingredienteBuscado = texto
+                        )
                     }
                     keyboardController?.hide()
                 }
@@ -316,10 +315,10 @@ fun PopupReceta(comida: ComidaRecomendada, alCerrar: () -> Unit, macrosViewModel
                         usuario?.id?.let { userId ->
                             macrosViewModel.agregarRecetaRecomendada(
                                 nombre        = comida.nombre_comida,
-                                calorias      = comida.calorias_porcion,
-                                proteinas     = comida.proteina_porcion,
-                                carbohidratos = comida.carbohidratos_porcion,
-                                grasas        = comida.grasa_porcion,
+                                calorias      = comida.calorias_porcion.toDouble(),
+                                proteinas     = comida.proteina_porcion.toDouble(),
+                                carbohidratos = comida.carbohidratos_porcion.toDouble(),
+                                grasas        = comida.grasa_porcion.toDouble(),
                                 usuarioId     = userId
                             )
                             agregado = true

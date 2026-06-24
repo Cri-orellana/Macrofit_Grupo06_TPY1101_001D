@@ -23,14 +23,15 @@ import com.duoc.macrofit.rutinas.view.componentes.EjercicioCard
 import com.duoc.macrofit.rutinas.view.componentes.EjercicioSeleccionadoCard
 import com.duoc.macrofit.rutinas.view.componentes.FiltrosEjercicio
 import com.duoc.macrofit.rutinas.viewmodel.CrearRutinaViewModel
+import com.duoc.macrofit.rutinas.viewmodel.EjercicioSeleccionado
 import com.duoc.macrofit.usuarios.ui.screens.MacroFitFondoUniversal
 import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo
 
 /**
  * Pantalla de creación de rutina personalizada en 3 pasos:
- *   Paso 1 – Nombre y descripción de la rutina
- *   Paso 2 – Selector de ejercicios con filtros
- *   Paso 3 – Revisión de ejercicios seleccionados y ajuste de parámetros
+ * Paso 1 – Nombre y descripción de la rutina
+ * Paso 2 – Selector de ejercicios con filtros
+ * Paso 3 – Revisión de ejercicios seleccionados y ajuste de parámetros
  *
  * @param onVolver          Acción al presionar atrás en el paso 1.
  * @param onRutinaCreada    Callback cuando la rutina se guardó correctamente.
@@ -363,12 +364,20 @@ private fun PasoRevisionParametros(viewModel: CrearRutinaViewModel) {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            itemsIndexed(viewModel.ejerciciosSeleccionados) { index, sel ->
+            itemsIndexed(
+                viewModel.ejerciciosSeleccionados.sortedWith(
+                    compareBy<EjercicioSeleccionado> { it.dia }
+                        .thenBy { it.orden ?: 0 }
+                )
+            ) { index, sel ->
                 EjercicioSeleccionadoCard(
                     item = sel,
                     numero = index + 1,
                     onEliminar = { viewModel.eliminarEjercicio(sel.idEjercicio) },
-                    onCambio = { actualizado -> viewModel.actualizarParametros(actualizado) }
+                    onCambio = { actualizado -> viewModel.actualizarParametros(actualizado) },
+                    onCambiarDia = { nuevoDia ->
+                        viewModel.cambiarDiaEjercicio(sel.idEjercicio, nuevoDia)
+                    }
                 )
             }
             item { Spacer(modifier = Modifier.height(8.dp)) }
