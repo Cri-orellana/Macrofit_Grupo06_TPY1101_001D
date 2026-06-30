@@ -20,6 +20,7 @@ import com.proyecto.macrofit.rutinaejercicio.service.RutinaUsuarioService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import main.java.com.proyecto.macrofit.rutinaejercicio.model.RutinaUsuarioHistorialDTO;
 
 @RestController
 @RequestMapping("/rutina-usuario")
@@ -48,12 +49,6 @@ public class RutinaUsuarioController {
     @Operation(summary = "Obtener todas las rutinas asignadas a un usuario")
     public ResponseEntity<List<RutinaUsuario>> obtenerPorUsuario(@PathVariable Integer idUsuario) {
         return new ResponseEntity<>(servicioRutinaUsuario.obtenerRutinasPorUsuario(idUsuario), HttpStatus.OK);
-    }
-
-    @GetMapping("/usuario/{idUsuario}/historial")
-    @Operation(summary = "Obtener historial de rutinas de un usuario")
-    public ResponseEntity<List<RutinaUsuario>> obtenerHistorial(@PathVariable Integer idUsuario) {
-        return new ResponseEntity<>(servicioRutinaUsuario.obtenerHistorialRutinas(idUsuario), HttpStatus.OK);
     }
 
     @GetMapping("/usuario/{idUsuario}/activa")
@@ -98,4 +93,10 @@ public class RutinaUsuarioController {
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    @GetMapping("/usuario/{idUsuario}/historial")
+    public ResponseEntity<List<RutinaUsuarioHistorialDTO>> obtenerHistorial(@PathVariable Integer idUsuario) {
+        return ResponseEntity.ok(servicioRutinaUsuario.obtenerHistorial(idUsuario));
+    }
+
 }

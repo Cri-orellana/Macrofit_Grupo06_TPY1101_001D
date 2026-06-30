@@ -17,4 +17,16 @@ public interface RutinaUsuarioRepository extends JpaRepository<RutinaUsuarioEnti
     List<RutinaUsuarioEntity> findByIdUsuarioAndActivoFalse(Integer idUsuario);
 
     List<RutinaUsuarioEntity> findByIdRutina(Integer idRutina);
+
+
+    @Modifying
+    @Query("""
+        UPDATE RutinaUsuarioEntity ru
+        SET ru.activo = false,
+            ru.fechaFin = CURRENT_DATE
+        WHERE ru.idRutina = :idRutina
+    """)
+    void desactivarPorIdRutina(@Param("idRutina") Integer idRutina);
+
+    List<RutinaUsuarioEntity> findByIdUsuarioOrderByFechaInicioDesc(Integer idUsuario);
 }

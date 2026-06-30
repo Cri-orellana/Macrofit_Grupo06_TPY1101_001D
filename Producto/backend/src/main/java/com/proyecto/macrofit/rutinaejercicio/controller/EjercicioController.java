@@ -34,7 +34,6 @@ public class EjercicioController {
     @Autowired
     private EjercicioService servicioEjercicio;
 
-    // --- SERVICIO AGREGADO (Del Código 1) ---
     @Autowired
     private EjercicioExcelImportService ejercicioExcelImportService;
 

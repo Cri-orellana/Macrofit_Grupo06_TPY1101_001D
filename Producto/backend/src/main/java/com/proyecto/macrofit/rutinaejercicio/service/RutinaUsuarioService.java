@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.proyecto.macrofit.rutinaejercicio.model.RutinaUsuario;
+import com.proyecto.macrofit.rutinaejercicio.model.RutinaUsuarioHistorialDTO;
 import com.proyecto.macrofit.rutinaejercicio.model.Entity.RutinaUsuarioEntity;
 import com.proyecto.macrofit.rutinaejercicio.repository.RutinaUsuarioRepository;
 
@@ -16,6 +17,9 @@ public class RutinaUsuarioService {
     
     @Autowired
     private RutinaUsuarioRepository repositorioRutinaUsuario;
+
+    @Autowired
+    private RutinaRepository repositorioRutina;
 
     public List<RutinaUsuario> obtenerTodasLasAsignaciones() {
         return repositorioRutinaUsuario.findAll().stream()
@@ -35,13 +39,6 @@ public class RutinaUsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public List<RutinaUsuario> obtenerHistorialRutinas(Integer idUsuario) {
-        return repositorioRutinaUsuario.findAll().stream()
-                .filter(ru -> ru.getIdUsuario() != null && ru.getIdUsuario().equals(idUsuario))
-                .filter(ru -> Boolean.FALSE.equals(ru.getActivo()))
-                .map(this::convertirARutinaUsuario)
-                .collect(Collectors.toList());
-    }
 
     public RutinaUsuario obtenerRutinaActivaUsuario(Integer idUsuario) {
         return repositorioRutinaUsuario.findAll().stream()
@@ -117,6 +114,31 @@ public class RutinaUsuarioService {
         });
 
         repositorioRutinaUsuario.saveAll(activas);
+    }
+
+    //Historial
+    public List<RutinaUsuarioHistorialDTO> obtenerHistorial(Integer idUsuario) {
+        List<RutinaUsuarioEntity> historial =
+            repositorioRutinaUsuario.findByIdUsuarioOrderByFechaInicioDesc(idUsuario);
+
+        List<Integer> idsRutina = historial.stream()
+            .map(RutinaUsuarioEntity::getIdRutina)
+            .distinct()
+            .toList();
+
+        Map<Integer, String> nombresPorRutina = repositorioRutina.findAllById(idsRutina).stream()
+            .collect(Collectors.toMap(RutinaEntity::getIdRutina, RutinaEntity::getNombreRutina));
+
+        return historial.stream()
+            .map(ru -> new RutinaUsuarioHistorialDTO(
+                ru.getIdRutinaUsuario(),
+                ru.getIdRutina(),
+                nombresPorRutina.get(ru.getIdRutina()),
+                ru.getFechaInicio(),
+                ru.getFechaFin(),
+                ru.getActivo()
+            ))
+            .toList();
     }
 
     //Conversiones

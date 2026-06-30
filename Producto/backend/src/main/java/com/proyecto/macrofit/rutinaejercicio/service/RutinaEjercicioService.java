@@ -19,7 +19,7 @@ public class RutinaEjercicioService {
     @Autowired
     private RutinaEjercicioRepository repositorioRutinaEjercicio;
 
-    public List<RutinaEjercicio> obtenerTodos() {
+     public List<RutinaEjercicio> obtenerTodos() {
         return repositorioRutinaEjercicio.findAll().stream()
                 .map(this::convertirARutinaEjercicio)
                 .collect(Collectors.toList());
@@ -33,9 +33,8 @@ public class RutinaEjercicioService {
     public List<RutinaEjercicio> obtenerPorRutina(Integer idRutina) {
         return repositorioRutinaEjercicio.findAll().stream()
                 .filter(re -> re.getIdRutina() != null && re.getIdRutina().equals(idRutina))
-                // Ordenamos primero por día y luego por orden
-                .sorted(Comparator.comparing((RutinaEjercicioEntity e) -> e.getDia() == null ? 1 : e.getDia())
-                        .thenComparing(e -> e.getOrden() == null ? 99 : e.getOrden()))
+                .sorted(Comparator.comparing(RutinaEjercicioEntity::getOrden,
+                        Comparator.nullsLast(Integer::compareTo)))
                 .map(this::convertirARutinaEjercicio)
                 .collect(Collectors.toList());
     }
@@ -55,7 +54,7 @@ public class RutinaEjercicioService {
                 entidad.setIdEjercicio(actualizado.getIdEjercicio());
 
             if (actualizado.getDia() != null)
-                entidad.setDia(actualizado.getDia()); // NUEVO
+                entidad.setDia(actualizado.getDia());
 
             if (actualizado.getOrden() != null)
                 entidad.setOrden(actualizado.getOrden());
@@ -78,20 +77,20 @@ public class RutinaEjercicioService {
         }).orElse(null);
     }
 
-    // --- REEMPLAZAR EJERCICIOS DE RUTINA (Del Código 1) ---
+    //Editar ejercicios rutina x usuario
     @Transactional
-    public List<RutinaEjercicio> reemplazarEjerciciosDeRutina(Integer idRutina, List<RutinaEjercicio> ejercicios) {
+    public List<RutinaEjercicio> reemplazarEjerciciosDeRutina(Integer idRutina,List<RutinaEjercicio> ejercicios) {
         repositorioRutinaEjercicio.deleteByIdRutina(idRutina);
         return ejercicios.stream()
                 .map(e -> {
                     e.setIdRutina(idRutina);
                     return convertirARutinaEjercicio(
-                            repositorioRutinaEjercicio.save(convertirAEntidad(e)));
+                        repositorioRutinaEjercicio.save(convertirAEntidad(e)));
                 })
                 .toList();
     }
 
-    // --- DRAG AND DROP (Del Código 2) ---
+    //Actualizar en bulk
     @Transactional
     public List<RutinaEjercicio> actualizarMultiples(List<RutinaEjercicio> rutinasActualizadas) {
         return rutinasActualizadas.stream().map(act -> modificarRutinaEjercicio(act.getIdRutinaEjercicio(), act))
@@ -115,17 +114,16 @@ public class RutinaEjercicioService {
         return lista.size();
     }
 
-    // Conversiones
+    //Conversiones
 
     private RutinaEjercicio convertirARutinaEjercicio(RutinaEjercicioEntity entidad) {
-        if (entidad == null)
-            return null;
+        if (entidad == null) return null;
 
         RutinaEjercicio rutinaEjercicio = new RutinaEjercicio();
         rutinaEjercicio.setIdRutinaEjercicio(entidad.getIdRutinaEjercicio());
         rutinaEjercicio.setIdRutina(entidad.getIdRutina());
         rutinaEjercicio.setIdEjercicio(entidad.getIdEjercicio());
-        rutinaEjercicio.setDia(entidad.getDia() != null ? entidad.getDia() : 1);
+        rutinaEjercicio.setDia(entidad.getDia());
         rutinaEjercicio.setOrden(entidad.getOrden());
         rutinaEjercicio.setSeries(entidad.getSeries());
         rutinaEjercicio.setRepeticiones(entidad.getRepeticiones());
@@ -135,14 +133,13 @@ public class RutinaEjercicioService {
     }
 
     private RutinaEjercicioEntity convertirAEntidad(RutinaEjercicio rutinaEjercicio) {
-        if (rutinaEjercicio == null)
-            return null;
+        if (rutinaEjercicio == null) return null;
 
         RutinaEjercicioEntity entidad = new RutinaEjercicioEntity();
         entidad.setIdRutinaEjercicio(rutinaEjercicio.getIdRutinaEjercicio());
         entidad.setIdRutina(rutinaEjercicio.getIdRutina());
         entidad.setIdEjercicio(rutinaEjercicio.getIdEjercicio());
-        entidad.setDia(rutinaEjercicio.getDia() != null ? rutinaEjercicio.getDia() : 1);
+        entidad.setDia(rutinaEjercicio.getDia());
         entidad.setOrden(rutinaEjercicio.getOrden());
         entidad.setSeries(rutinaEjercicio.getSeries());
         entidad.setRepeticiones(rutinaEjercicio.getRepeticiones());

@@ -52,11 +52,6 @@ interface RutinaEjercicioApi {
         @Body request: AsignarRutinaRequest
     ): Response<RutinaUsuario>
 
-    @PATCH("rutina-usuario/{id}/desactivar")
-    suspend fun desactivarAsignacion(
-        @Path("id") idAsignacion: Int
-    ): Response<RutinaUsuario>
-
     // ---- FILTROS DE EJERCICIOS ----
     @GET("ejercicios/filtrar")
     suspend fun filtrarEjercicios(
