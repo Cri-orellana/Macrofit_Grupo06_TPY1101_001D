@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,13 +129,15 @@ public class SpoonacularService {
         String cacheKey = generarCacheKey(tipoDieta, ingredientes,
                 maxCarbohidratos, minProteina, maxGrasa);
 
-        List<RecetaCache> enCache = cacheRepo.findByCacheKey(cacheKey);
+        LocalDateTime limiteExpiracion = LocalDateTime.now().minusHours(24);
+
+        List<RecetaCache> enCache = cacheRepo.findByCacheKeyAndCreadoEnAfter(cacheKey, limiteExpiracion);
         if (!enCache.isEmpty()) {
-            System.out.println("✅ Cache HIT: " + cacheKey);
+            System.out.println("✅ Cache HIT (vigente): " + cacheKey + " (" + enCache.size() + " recetas)");
             return enCache.stream().map(this::cacheAComida).toList();
         }
 
-        System.out.println("🌐 Cache MISS: " + cacheKey);
+        System.out.println("🌐 Cache MISS o expirado: " + cacheKey + " → consultando Spoonacular");
 
         List<ComidaRecomendada> listaRecomendaciones = new ArrayList<>();
 
@@ -258,8 +261,8 @@ public class SpoonacularService {
             }
 
             for (ComidaRecomendada comida : listaRecomendaciones) {
-                if (cacheRepo.existsBySpoonacularId(comida.getId_comida())) {
-                    System.out.println("⏭️ Ya existe en cache: " + comida.getNombre_comida());
+                if (cacheRepo.existsBySpoonacularIdAndCacheKey(comida.getId_comida(), cacheKey)) {
+                    System.out.println("⏭️ Ya existe en cache para esta búsqueda: " + comida.getNombre_comida());
                     continue;
                 }
 
