@@ -1,14 +1,20 @@
 package com.proyecto.macrofit.rutinaejercicio.service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.proyecto.macrofit.rutinaejercicio.model.RutinaUsuario;
+import com.proyecto.macrofit.rutinaejercicio.model.RutinaUsuarioHistorialDTO;
+import com.proyecto.macrofit.rutinaejercicio.model.Entity.RutinaEntity;
 import com.proyecto.macrofit.rutinaejercicio.model.Entity.RutinaUsuarioEntity;
+import com.proyecto.macrofit.rutinaejercicio.repository.RutinaRepository;
 import com.proyecto.macrofit.rutinaejercicio.repository.RutinaUsuarioRepository;
 
 @Service
@@ -16,6 +22,10 @@ public class RutinaUsuarioService {
 
     @Autowired
     private RutinaUsuarioRepository repositorioRutinaUsuario;
+
+    // Integrado del Código 1 para el historial DTO
+    @Autowired
+    private RutinaRepository repositorioRutina;
 
     public List<RutinaUsuario> obtenerTodasLasAsignaciones() {
         return repositorioRutinaUsuario.findAll().stream()
@@ -52,7 +62,11 @@ public class RutinaUsuarioService {
                 .orElse(null);
     }
 
+    @Transactional
     public RutinaUsuario asignarRutinaUsuario(RutinaUsuario rutinaUsuario) {
+        // Integrado del Código 1: desactivar rutinas previas antes de asignar nueva
+        desactivarRutinasActivasDelUsuario(rutinaUsuario.getIdUsuario());
+
         if (rutinaUsuario.getActivo() == null) {
             rutinaUsuario.setActivo(true);
         }
@@ -101,7 +115,42 @@ public class RutinaUsuarioService {
         return false;
     }
 
-    // Conversiones
+    // --- MÉTODOS FALTANTES AGREGADOS (Del Código 1) ---
+
+    public void desactivarRutinasActivasDelUsuario(Integer idUsuario) {
+        List<RutinaUsuarioEntity> activas = repositorioRutinaUsuario.findByIdUsuarioAndActivoTrue(idUsuario);
+
+        activas.forEach(ru -> {
+            ru.setActivo(false);
+            ru.setFechaFin(LocalDate.now());
+        });
+
+        repositorioRutinaUsuario.saveAll(activas);
+    }
+
+    public List<RutinaUsuarioHistorialDTO> obtenerHistorial(Integer idUsuario) {
+        List<RutinaUsuarioEntity> historial = repositorioRutinaUsuario.findByIdUsuarioOrderByFechaInicioDesc(idUsuario);
+
+        List<Integer> idsRutina = historial.stream()
+                .map(RutinaUsuarioEntity::getIdRutina)
+                .distinct()
+                .toList();
+
+        Map<Integer, String> nombresPorRutina = repositorioRutina.findAllById(idsRutina).stream()
+                .collect(Collectors.toMap(RutinaEntity::getIdRutina, RutinaEntity::getNombreRutina));
+
+        return historial.stream()
+                .map(ru -> new RutinaUsuarioHistorialDTO(
+                        ru.getIdRutinaUsuario(),
+                        ru.getIdRutina(),
+                        nombresPorRutina.get(ru.getIdRutina()),
+                        ru.getFechaInicio(),
+                        ru.getFechaFin(),
+                        ru.getActivo()))
+                .toList();
+    }
+
+    // --- CONVERSIONES ---
 
     private RutinaUsuario convertirARutinaUsuario(RutinaUsuarioEntity entidad) {
         if (entidad == null)

@@ -55,15 +55,27 @@ public class EjercicioExcelImportService {
                     continue;
                 }
 
+                // Integración de validación del Código 1
+                String videoEjercicio = obtenerTextoOHipervinculo(fila, columnas, "Short YouTube Demonstration");
+                if (videoEjercicio == null || videoEjercicio.isBlank()) {
+                    continue;
+                }
+
+                // Integración de validación del Código 1
+                String implementoTraducido = traducirImplemento(obtenerTexto(fila, columnas, "Primary Equipment"));
+                if (implementoTraducido == null) {
+                    continue;
+                }
+
                 Ejercicio ejercicio = new Ejercicio();
 
                 ejercicio.setIdEjercicio(null);
 
                 ejercicio.setNombreEjercicio(nombreEjercicio);
-                ejercicio.setVideoEjercicio(obtenerTextoOHipervinculo(fila, columnas, "Short YouTube Demonstration"));
+                ejercicio.setVideoEjercicio(videoEjercicio);
                 ejercicio.setNivelDificultad(traducirDificultad(obtenerTexto(fila, columnas, "Difficulty Level")));
                 ejercicio.setMusculoObjetivo(traducirMusculo(obtenerTexto(fila, columnas, "Target Muscle Group")));
-                ejercicio.setImplemento(traducirImplemento(obtenerTexto(fila, columnas, "Primary Equipment")));
+                ejercicio.setImplemento(implementoTraducido);
                 ejercicio.setZonaMuscular(traducirZonaMuscular(obtenerTexto(fila, columnas, "Body Region")));
 
                 ejercicio.setDescripcion(null);
@@ -134,6 +146,7 @@ public class EjercicioExcelImportService {
             case "beginner" -> "Ligero";
             case "intermediate" -> "Moderado";
             case "advanced" -> "Intenso";
+            case "expert" -> "Intenso"; // Integrado del código 1
             default -> capitalizar(valor);
         };
     }
@@ -178,27 +191,46 @@ public class EjercicioExcelImportService {
     }
 
     private String traducirImplemento(String valor) {
-        if (valor == null)
+        // Integrado .isBlank() del código 1
+        if (valor == null || valor.isBlank())
             return null;
 
         return switch (valor.trim().toLowerCase()) {
+            // Combinación de ambos diccionarios
+            case "ab wheel" -> "Rueda abdominal";
+            case "barbell" -> "Barra";
+            case "battle ropes" -> "Cuerdas de batalla";
+            case "bench" -> "Banco";
             case "bodyweight" -> "Peso corporal";
+            case "bulgarian bag" -> "Saco búlgaro";
+            case "cable" -> "Polea";
+            case "climbing rope" -> "Cuerda de escalada";
             case "dumbbell" -> "Mancuerna";
             case "dumbbells" -> "Mancuernas";
-            case "barbell" -> "Barra";
+            case "ez bar" -> "Barra EZ";
+            case "gymnastic rings" -> "Anillas gimnásticas";
+            case "heavy sandbag" -> "Saco de arena";
             case "kettlebell" -> "Kettlebell";
             case "kettlebells" -> "Kettlebells";
-            case "cable" -> "Polea";
+            case "landmine" -> "Landmine";
             case "machine" -> "Máquina";
+            case "medicine ball" -> "Balón medicinal";
+            case "miniband" -> "Minibanda";
+            case "none" -> "Sin implemento";
+            case "parallette bars" -> "Barras paralelas";
+            case "pull up bar" -> "Barra de dominadas";
             case "resistance band" -> "Banda elástica";
             case "resistance bands" -> "Bandas elásticas";
-            case "medicine ball" -> "Balón medicinal";
+            case "sandbag" -> "Saco de arena";
+            case "slamball" -> "Balón de golpeo";
             case "stability ball" -> "Balón de estabilidad";
-            case "bench" -> "Banco";
-            case "pull up bar" -> "Barra de dominadas";
-            case "suspension trainer" -> "Suspensión";
-            case "none" -> "Sin implemento";
-            default -> capitalizar(valor);
+            case "superband" -> "Superbanda";
+            case "suspension trainer" -> "Suspensión"; // Manda la traducción del código 2
+            case "tire" -> "Neumático";
+            case "trap bar" -> "Barra hexagonal";
+            case "wall ball" -> "Balón medicinal";
+            case "weight plate" -> "Disco de peso";
+            default -> capitalizar(valor); // Manda el default del código 2
         };
     }
 

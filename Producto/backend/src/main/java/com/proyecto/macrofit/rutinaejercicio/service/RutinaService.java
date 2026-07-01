@@ -31,6 +31,9 @@ public class RutinaService {
     @Autowired
     private RutinaEjercicioRepository repositorioRutinaEjercicio;
 
+    @Autowired
+    private RutinaUsuarioService rutinaUsuarioService; // Integrado del Código 1
+
     // --- MÉTODOS BASE (Del Código 2) ---
     public List<Rutina> obtenerRutinas() {
         return repositorioRutina.findAll().stream()
@@ -102,13 +105,26 @@ public class RutinaService {
     }
 
     // Sobrecarga del método crearRutina para asignación a usuario
+    @Transactional
     public Rutina crearRutina(Rutina rutina, Integer idUsuario) {
         rutina.setIdRutina(null);
         rutina.setIdUsuarioCreador(idUsuario);
         rutina.setEsBase(false);
         rutina.setActivoCatalogo(false);
 
+        // Integrado lógica de cantidadDias del Código 1
+        if (rutina.getCantidadDias() == null || rutina.getCantidadDias() < 1) {
+            rutina.setCantidadDias(3);
+        }
+
+        if (rutina.getCantidadDias() > 7) {
+            rutina.setCantidadDias(7);
+        }
+
         RutinaEntity guardada = repositorioRutina.save(convertirAEntidad(rutina));
+
+        // Desactivación previa integrada del Código 1
+        rutinaUsuarioService.desactivarRutinasActivasDelUsuario(idUsuario);
 
         RutinaUsuarioEntity asignacion = new RutinaUsuarioEntity();
         asignacion.setIdRutina(guardada.getIdRutina());
@@ -158,6 +174,7 @@ public class RutinaService {
         copia.setIdUsuarioCreador(idUsuario);
         copia.setNombreRutina(base.getNombreRutina() + " personalizada");
         copia.setDescripcion(base.getDescripcion());
+        copia.setCantidadDias(base.getCantidadDias()); // Integrado del Código 1
         copia.setEsBase(false);
         copia.setActivoCatalogo(false);
 
@@ -168,6 +185,7 @@ public class RutinaService {
 
             nuevo.setIdRutina(copiaGuardada.getIdRutina());
             nuevo.setIdEjercicio(ejercicioBase.getIdEjercicio());
+            nuevo.setDia(ejercicioBase.getDia()); // Integrado del Código 1
             nuevo.setOrden(ejercicioBase.getOrden());
             nuevo.setSeries(ejercicioBase.getSeries());
             nuevo.setRepeticiones(ejercicioBase.getRepeticiones());
@@ -177,6 +195,28 @@ public class RutinaService {
             repositorioRutinaEjercicio.save(nuevo);
         }
         return convertirARutina(copiaGuardada);
+    }
+
+    // Integrado método faltante del Código 1
+    @Transactional
+    public boolean eliminarRutinaPersonal(Integer idRutina, Integer idUsuario) {
+
+        Optional<RutinaEntity> optionalRutina = repositorioRutina.findById(idRutina);
+        if (optionalRutina.isEmpty()) {
+            return false;
+        }
+        RutinaEntity rutina = optionalRutina.get();
+        if (!idUsuario.equals(rutina.getIdUsuarioCreador())) {
+            return false;
+        }
+        if (Boolean.TRUE.equals(rutina.getActivoCatalogo()) || Boolean.TRUE.equals(rutina.getEsBase())) {
+            return false;
+        }
+        repositorioRutinaEjercicio.deleteByIdRutina(idRutina);
+        repositorioRutinaUsuario.desactivarPorIdRutina(idRutina);
+        repositorioRutina.delete(rutina);
+
+        return true;
     }
 
     // --- CONVERSIONES ---
@@ -193,9 +233,10 @@ public class RutinaService {
         rutina.setDescripcion(entidad.getDescripcion());
         rutina.setActivoCatalogo(entidad.getActivoCatalogo());
 
-        // Campos faltantes
+        // Campos faltantes integrados
         rutina.setIdUsuarioCreador(entidad.getIdUsuarioCreador());
         rutina.setEsBase(entidad.getEsBase());
+        rutina.setCantidadDias(entidad.getCantidadDias()); // Integrado del código 1
 
         return rutina;
     }
@@ -210,9 +251,10 @@ public class RutinaService {
         entidad.setDescripcion(rutina.getDescripcion());
         entidad.setActivoCatalogo(rutina.getActivoCatalogo());
 
-        // Campos faltantes
+        // Campos faltantes integrados
         entidad.setIdUsuarioCreador(rutina.getIdUsuarioCreador());
         entidad.setEsBase(rutina.getEsBase());
+        entidad.setCantidadDias(rutina.getCantidadDias()); // Integrado del código 1
 
         return entidad;
     }

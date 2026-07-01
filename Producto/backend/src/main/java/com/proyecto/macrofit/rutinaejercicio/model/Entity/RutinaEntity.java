@@ -27,6 +27,9 @@ public class RutinaEntity {
     @Column(name = "descripcion", length = 500)
     private String descripcion;
 
+    @Column(name = "cantidad_dias")
+    private Integer cantidadDias;
+
     @Column(name = "es_base")
     private Boolean esBase;
 
