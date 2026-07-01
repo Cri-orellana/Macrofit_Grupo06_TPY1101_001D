@@ -109,4 +109,6 @@ interface RutinaEjercicioApi {
         @Path("idUsuario") idUsuario: Int
     ): Response<Unit>
 
+    @GET("rutina-usuario/usuario/{idUsuario}/historial")
+    suspend fun obtenerHistorial(@Path("idUsuario") idUsuario: Int): Response<List<RutinaUsuarioHistorialDTO>>
 }

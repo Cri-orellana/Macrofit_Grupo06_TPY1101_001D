@@ -29,8 +29,10 @@ import com.duoc.macrofit.rutinas.viewmodel.EjercicioSeleccionado
 fun EjercicioSeleccionadoCard(
     item: EjercicioSeleccionado,
     numero: Int,
+    cantidadDias: Int,
     onEliminar: () -> Unit,
-    onCambio: (EjercicioSeleccionado) -> Unit
+    onCambio: (EjercicioSeleccionado) -> Unit,
+    onCambiarDia: (Int) -> Unit
 ) {
     val verde = MaterialTheme.colorScheme.primary
     val colorFondo = Color(0xFF1E1E1E)
@@ -94,6 +96,44 @@ fun EjercicioSeleccionadoCard(
                         contentDescription = "Eliminar",
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Día asignado",
+                color = Color.Gray,
+                style = MaterialTheme.typography.labelSmall
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                (1..cantidadDias).forEach { dia ->
+                    val seleccionado = item.dia == dia
+
+                    FilterChip(
+                        selected = seleccionado,
+                        onClick = { onCambiarDia(dia) },
+                        label = { Text("Día $dia") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = verde.copy(alpha = 0.2f),
+                            selectedLabelColor = verde,
+                            labelColor = Color.LightGray
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = seleccionado,
+                            selectedBorderColor = verde,
+                            borderColor = Color(0xFF444444)
+                        )
                     )
                 }
             }

@@ -7,6 +7,7 @@ data class RutinaEjercicioRequest(
 
     val idEjercicio: Int,
 
+    val dia: Int? = 1,
     val orden: Int?,
     val series: Int?,
     val repeticiones: Int?,

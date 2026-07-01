@@ -1,14 +1,8 @@
 package com.duoc.macrofit.rutinas.view
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -110,14 +104,48 @@ fun RutinaActivaView(viewModel: RutinasViewModel, colorOscuro: Color, onCrearRut
                         Text("No hay ejercicios en esta rutina.", color = Color.Gray)
                     }
                 } else {
+                    val ejerciciosPorDia = viewModel.obtenerEjerciciosPorDia()
+
                     LazyColumn(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        itemsIndexed(viewModel.ejerciciosEnRutina) { index, item ->
-                            EjercicioRutinaCard(numero = index + 1, item = item, colorOscuro = colorOscuro)
+                        ejerciciosPorDia.forEach { (dia, ejerciciosDelDia) ->
+
+                            item(key = "titulo_dia_$dia") {
+                                Column {
+                                    Text(
+                                        text = "Día $dia",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    HorizontalDivider(
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                                    )
+                                }
+                            }
+
+                            itemsIndexed(
+                                items = ejerciciosDelDia,
+                                key = { index, item ->
+                                    item.parametros.idRutinaEjercicio ?: "${item.parametros.idEjercicio}_${item.parametros.dia}_$index"
+                                }
+                            ) { index, item ->
+                                EjercicioRutinaCard(
+                                    numero = index + 1,
+                                    item = item,
+                                    colorOscuro = colorOscuro
+                                )
+                            }
                         }
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
                 }
             }

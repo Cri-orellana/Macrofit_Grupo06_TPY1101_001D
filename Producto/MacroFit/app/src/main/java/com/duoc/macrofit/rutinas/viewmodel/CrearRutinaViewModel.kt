@@ -10,6 +10,7 @@ import com.duoc.macrofit.rutinas.api.RetrofitRutinas
 import com.duoc.macrofit.rutinas.model.CrearRutinaRequest
 import com.duoc.macrofit.rutinas.model.Ejercicio
 import com.duoc.macrofit.rutinas.model.RutinaEjercicioRequest
+import com.duoc.macrofit.rutinas.model.RutinaEjercicio
 import com.duoc.macrofit.usuarios.utils.SessionManager
 import kotlinx.coroutines.launch
 
@@ -20,6 +21,10 @@ import kotlinx.coroutines.launch
 data class EjercicioSeleccionado(
     val idEjercicio: Int,
     val nombreEjercicio: String,
+
+    val dia: Int = 1,
+    val orden: Int? = null,
+
     val series: Int? = 3,
     val repeticiones: Int? = 10,
     val tiempoSeg: Int? = null,
@@ -34,9 +39,9 @@ class CrearRutinaViewModel : ViewModel() {
     var cargandoRutinaEditar by mutableStateOf(false)
     var yaCargoRutinaEditar by mutableStateOf(false)
 
-    // ── Estado del formulario ─────────────────────────────────────────────────
     var nombreRutina by mutableStateOf("")
     var descripcionRutina by mutableStateOf("")
+    var cantidadDias by mutableStateOf(3)
 
     // ── Catálogo de ejercicios ────────────────────────────────────────────────
     var todosLosEjercicios by mutableStateOf<List<Ejercicio>>(emptyList())
@@ -165,7 +170,8 @@ class CrearRutinaViewModel : ViewModel() {
                     idUsuario = idUsuario,
                     CrearRutinaRequest(
                         nombreRutina = nombreRutina,
-                        descripcion = descripcionRutina.ifBlank { null }
+                        descripcion = descripcionRutina.ifBlank { null },
+                        cantidadDias = cantidadDias
                     )
                 )
                 if (!rutinaResp.isSuccessful || rutinaResp.body() == null) {
@@ -181,6 +187,7 @@ class CrearRutinaViewModel : ViewModel() {
                         RutinaEjercicioRequest(
                             idRutina = idRutinaCreada,
                             idEjercicio = sel.idEjercicio,
+                            dia = sel.dia,
                             orden = index + 1,
                             series = sel.series,
                             repeticiones = sel.repeticiones,
@@ -223,6 +230,7 @@ class CrearRutinaViewModel : ViewModel() {
 
                 nombreRutina = rutina.nombreRutina
                 descripcionRutina = rutina.descripcion ?: ""
+                cantidadDias = rutina.cantidadDias ?: 3
 
                 if (todosLosEjercicios.isEmpty()) {
                     val respEjercicios = api.obtenerEjerciciosActivos()
@@ -240,13 +248,18 @@ class CrearRutinaViewModel : ViewModel() {
                 val ejerciciosRutina = respRutinaEjercicios.body() ?: emptyList()
 
                 ejerciciosSeleccionados = ejerciciosRutina
-                    .sortedBy { it.orden }
+                    .sortedWith(
+                        compareBy<RutinaEjercicio> { it.dia ?: 1 }
+                            .thenBy { it.orden ?: 0 }
+                    )
                     .map { re ->
                         val ejercicio = todosLosEjercicios.find { it.idEjercicio == re.idEjercicio }
 
                         EjercicioSeleccionado(
                             idEjercicio = re.idEjercicio,
                             nombreEjercicio = ejercicio?.nombreEjercicio ?: "Ejercicio #${re.idEjercicio}",
+                            dia = re.dia ?: 1,
+                            orden = re.orden,
                             series = re.series,
                             repeticiones = re.repeticiones,
                             tiempoSeg = re.tiempoSeg,
@@ -286,24 +299,30 @@ class CrearRutinaViewModel : ViewModel() {
                     idUsuario = idUsuario,
                     request = CrearRutinaRequest(
                         nombreRutina = nombreRutina,
-                        descripcion = descripcionRutina.ifBlank { null }
+                        descripcion = descripcionRutina.ifBlank { null },
+                        cantidadDias = cantidadDias
                     )
                 )
                 if (!respRutina.isSuccessful) {
                     errorMensaje = "No se pudo editar la rutina. Código: ${respRutina.code()}"
                     return@launch
                 }
-                val ejerciciosRequest = ejerciciosSeleccionados.mapIndexed { index, sel ->
-                    RutinaEjercicioRequest(
-                        idRutina = idRutina,
-                        idEjercicio = sel.idEjercicio,
-                        orden = index + 1,
-                        series = sel.series,
-                        repeticiones = sel.repeticiones,
-                        tiempoSeg = sel.tiempoSeg,
-                        pesoReferencia = sel.pesoReferencia
-                    )
-                }
+                val ejerciciosRequest = ejerciciosSeleccionados
+                    .groupBy { it.dia }
+                    .flatMap { (dia, ejerciciosDelDia) ->
+                        ejerciciosDelDia.mapIndexed { index, sel ->
+                            RutinaEjercicioRequest(
+                                idRutina = idRutina,
+                                idEjercicio = sel.idEjercicio,
+                                dia = dia,
+                                orden = index + 1,
+                                series = sel.series,
+                                repeticiones = sel.repeticiones,
+                                tiempoSeg = sel.tiempoSeg,
+                                pesoReferencia = sel.pesoReferencia
+                            )
+                        }
+                    }
                 val respEjercicios = api.reemplazarEjerciciosDeRutina(
                     idRutina = idRutina,
                     ejercicios = ejerciciosRequest
@@ -321,9 +340,44 @@ class CrearRutinaViewModel : ViewModel() {
         }
     }
 
+    fun cambiarDiaEjercicio(idEjercicio: Int, nuevoDia: Int) {
+        ejerciciosSeleccionados = ejerciciosSeleccionados.map { ejercicio ->
+            if (ejercicio.idEjercicio == idEjercicio) {
+                ejercicio.copy(dia = nuevoDia)
+            } else {
+                ejercicio
+            }
+        }
+    }
+
+    fun aumentarDias() {
+        if (cantidadDias < 7) {
+            cantidadDias++
+        }
+    }
+
+    fun disminuirDias() {
+        if (cantidadDias > 1) {
+            val nuevoValor = cantidadDias - 1
+
+            val hayEjerciciosEnDiasEliminados = ejerciciosSeleccionados.any { ejercicio ->
+                ejercicio.dia > nuevoValor
+            }
+
+            if (hayEjerciciosEnDiasEliminados) {
+                errorMensaje = "No puedes disminuir días porque hay ejercicios asignados al día $cantidadDias. Muévelos o elimínalos primero."
+                return
+            }
+
+            cantidadDias = nuevoValor
+            errorMensaje = null
+        }
+    }
+
     fun limpiar() {
         nombreRutina = ""
         descripcionRutina = ""
+        cantidadDias = 3
         ejerciciosSeleccionados = emptyList()
         busqueda = ""
         zonaFiltro = null

@@ -48,11 +48,11 @@ fun MainScreen() {
                 FloatingActionButton(
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    onClick = { /* Aquí abriremos el menú para añadir comida o peso */ }
+                    onClick = { navController.navigate("estadisticas") }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Añadir",
+                        contentDescription = "Estadísticas",
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -123,6 +123,9 @@ fun MainScreen() {
                                 }
                             )
                         }
+                    }
+                    composable("estadisticas") {
+                        EstadisticasScreen()
                     }
 
                     composable("perfil") {

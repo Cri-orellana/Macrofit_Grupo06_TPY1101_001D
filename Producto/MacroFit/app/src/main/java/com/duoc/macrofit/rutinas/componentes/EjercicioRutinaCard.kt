@@ -25,21 +25,29 @@ import androidx.compose.ui.unit.dp
 import com.duoc.macrofit.rutinas.viewmodel.EjercicioEnRutina
 
 @Composable
-fun EjercicioRutinaCard(numero: Int, item: EjercicioEnRutina, colorOscuro: Color) {
+fun EjercicioRutinaCard(
+    numero: Int,
+    item: EjercicioEnRutina,
+    colorOscuro: Color
+) {
     val re = item.parametros
     val ej = item.detalle
 
+    var expandido by remember { mutableStateOf(false) }
+    var mostrarVideo by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expandido = !expandido },
         colors = CardDefaults.cardColors(containerColor = colorOscuro),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Número de orden
             Box(
                 modifier = Modifier.size(40.dp),
                 contentAlignment = Alignment.Center
@@ -63,16 +71,26 @@ fun EjercicioRutinaCard(numero: Int, item: EjercicioEnRutina, colorOscuro: Color
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = ej?.nombreEjercicio ?: "Ejercicio #${re.idEjercicio}",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleSmall
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = ej?.nombreEjercicio ?: "Ejercicio #${re.idEjercicio}",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Icon(
+                        imageVector = if (expandido) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = Color.Gray
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Chips de parámetros
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     re.series?.let {
                         ChipParametro(label = "$it series")
@@ -88,14 +106,54 @@ fun EjercicioRutinaCard(numero: Int, item: EjercicioEnRutina, colorOscuro: Color
                     }
                 }
 
-                ej?.descripcion?.let {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = it,
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2
-                    )
+                if (expandido) {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    ej?.descripcion?.let {
+                        Text(
+                            text = it,
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    if (!ej?.videoEjercicio.isNullOrBlank()) {
+                        OutlinedButton(
+                            onClick = { mostrarVideo = !mostrarVideo },
+                            modifier = Modifier.fillMaxWidth(),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text(
+                                text = if (mostrarVideo) "Ocultar video" else "Ver video",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        if (mostrarVideo) {
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            YoutubeVideoPlayer(
+                                videoUrl = ej?.videoEjercicio,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "Este ejercicio no tiene video disponible.",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }

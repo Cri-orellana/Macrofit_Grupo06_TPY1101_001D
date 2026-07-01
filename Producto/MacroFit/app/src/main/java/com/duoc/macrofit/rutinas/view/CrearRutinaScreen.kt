@@ -23,6 +23,7 @@ import com.duoc.macrofit.rutinas.view.componentes.EjercicioCard
 import com.duoc.macrofit.rutinas.view.componentes.EjercicioSeleccionadoCard
 import com.duoc.macrofit.rutinas.view.componentes.FiltrosEjercicio
 import com.duoc.macrofit.rutinas.viewmodel.CrearRutinaViewModel
+import com.duoc.macrofit.rutinas.viewmodel.EjercicioSeleccionado
 import com.duoc.macrofit.usuarios.ui.screens.MacroFitFondoUniversal
 import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo
 
@@ -215,6 +216,63 @@ private fun PasoNombreDescripcion(viewModel: CrearRutinaViewModel) {
             shape = RoundedCornerShape(12.dp)
         )
     }
+    //Transformar en carta!
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "Días de entrenamiento",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleSmall
+                )
+
+                Text(
+                    text = "Define cuántos días tendrá esta rutina.",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { viewModel.disminuirDias() },
+                    enabled = viewModel.cantidadDias > 1,
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text("-")
+                }
+
+                Text(
+                    text = "${viewModel.cantidadDias}",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                OutlinedButton(
+                    onClick = { viewModel.aumentarDias() },
+                    enabled = viewModel.cantidadDias < 7,
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text("+")
+                }
+            }
+        }
+    }
 }
 
 //Selector ejercicios
@@ -361,17 +419,23 @@ private fun PasoRevisionParametros(viewModel: CrearRutinaViewModel) {
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            itemsIndexed(viewModel.ejerciciosSeleccionados) { index, sel ->
+            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            itemsIndexed(
+                viewModel.ejerciciosSeleccionados.sortedWith(
+                    compareBy<EjercicioSeleccionado> { it.dia }
+                        .thenBy { it.orden ?: 0 })) { index, sel ->
                 EjercicioSeleccionadoCard(
                     item = sel,
                     numero = index + 1,
+                    cantidadDias = viewModel.cantidadDias,
                     onEliminar = { viewModel.eliminarEjercicio(sel.idEjercicio) },
-                    onCambio = { actualizado -> viewModel.actualizarParametros(actualizado) }
+                    onCambio = { actualizado -> viewModel.actualizarParametros(actualizado) },
+                    onCambiarDia = { nuevoDia ->
+                        viewModel.cambiarDiaEjercicio(sel.idEjercicio, nuevoDia)
+                    }
                 )
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            item { Spacer(modifier = Modifier.height(8.dp)) }
         }
     }
 }

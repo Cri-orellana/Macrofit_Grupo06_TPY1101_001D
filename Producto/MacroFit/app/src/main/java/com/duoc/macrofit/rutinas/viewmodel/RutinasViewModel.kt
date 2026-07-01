@@ -11,7 +11,9 @@ import com.duoc.macrofit.rutinas.model.Ejercicio
 import com.duoc.macrofit.rutinas.model.Rutina
 import com.duoc.macrofit.rutinas.model.RutinaEjercicio
 import com.duoc.macrofit.rutinas.model.RutinaUsuario
+import com.duoc.macrofit.rutinas.model.RutinaUsuarioHistorialDTO
 import com.duoc.macrofit.usuarios.utils.SessionManager
+import kotlin.collections.emptyList
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -19,11 +21,6 @@ import java.util.Locale
 import android.util.Log
 
 // Modelo auxiliar para mostrar ejercicio + sus parámetros juntos en la UI
-data class EjercicioEnRutina(
-    val parametros: RutinaEjercicio,
-    val detalle: Ejercicio?
-)
-
 class RutinasViewModel : ViewModel() {
 
     private val api = RetrofitRutinas.apiService
@@ -62,6 +59,10 @@ class RutinasViewModel : ViewModel() {
     var filtroImplemento by mutableStateOf<String?>(null)
     var filtroNivelDificultad by mutableStateOf<String?>(null)
     var filtroMusculoObjetivo by mutableStateOf<String?>(null)
+
+    var historialRutinas by mutableStateOf<List<RutinaUsuarioHistorialDTO>>(emptyList())
+    var cargandoHistorial by mutableStateOf(false)
+    var errorHistorial by mutableStateOf<String?>(null)
 
     init {
         cargarRutinaActiva()
@@ -224,15 +225,6 @@ class RutinasViewModel : ViewModel() {
             error = null
 
             try {
-                // Desactivar asignación previa si existe
-                asignacionActiva?.let { asignacion ->
-                    val respDesactivar = api.desactivarAsignacion(asignacion.idRutinaUsuario)
-
-                    if (!respDesactivar.isSuccessful) {
-                        error = "No se pudo desactivar la rutina anterior. Código: ${respDesactivar.code()}"
-                        return@launch
-                    }
-                }
 
                 val fechaActual = SimpleDateFormat(
                     "yyyy-MM-dd",
@@ -355,6 +347,35 @@ class RutinasViewModel : ViewModel() {
                 error = "Error al eliminar rutina: ${e.message}"
             } finally {
                 cargando = false
+            }
+        }
+    }
+
+    fun obtenerEjerciciosPorDia(): Map<Int, List<EjercicioEnRutina>> {
+        return ejerciciosEnRutina
+            .groupBy { it.parametros.dia ?: 1 }
+            .toSortedMap()
+            .mapValues { entry ->
+                entry.value.sortedBy { it.parametros.orden ?: 0 }
+            }
+    }
+
+    fun cargarHistorialRutinas() {
+        val idUsuario = SessionManager.usuarioActual?.id ?: return
+        viewModelScope.launch {
+            cargandoHistorial = true
+            errorHistorial = null
+            try {
+                val respuesta = api.obtenerHistorial(idUsuario)
+                if (respuesta.isSuccessful && respuesta.body() != null) {
+                    historialRutinas = respuesta.body()!!
+                } else {
+                    historialRutinas = emptyList()
+                }
+            } catch (e: Exception) {
+                errorHistorial = "No se pudo conectar con el servidor de rutinas."
+            } finally {
+                cargandoHistorial = false
             }
         }
     }
