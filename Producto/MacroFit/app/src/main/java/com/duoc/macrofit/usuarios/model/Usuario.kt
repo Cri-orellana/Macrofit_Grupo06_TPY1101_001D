@@ -1,7 +1,9 @@
 package com.duoc.macrofit.usuarios.model
 
+import com.google.gson.annotations.SerializedName
 
 data class Usuario(
+    @SerializedName("id_usuario")
     val id: Int = 0,
     val nom_usuario: String = "",
     val correo: String = "",

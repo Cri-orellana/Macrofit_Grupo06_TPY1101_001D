@@ -83,10 +83,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = { onNavigateToRegistro() }) {
-                Text("¿No tienes cuenta? Regístrate", color = MaterialTheme.colorScheme.primary)
-            }
+
 
             if (viewModel.isLoading) {
                 CircularProgressIndicator()
