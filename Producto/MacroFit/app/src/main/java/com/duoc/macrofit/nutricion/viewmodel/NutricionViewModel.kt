@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.duoc.macrofit.nutricion.model.ComidaRecomendada
 import com.duoc.macrofit.nutricion.model.TipoAlimentacion
 import com.duoc.macrofit.usuarios.api.RetrofitClient
+import com.duoc.macrofit.utils.TraduccionUtils
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 
@@ -23,6 +24,7 @@ class NutricionViewModel : ViewModel() {
     var mensajeError by mutableStateOf<String?>(null)
 
     init {
+        Log.d("TRADUCCION_DEBUG", "NutricionViewModel INICIADO")
         obtenerTiposDieta()
         obtenerTodasLasRecetas()
     }
@@ -31,7 +33,10 @@ class NutricionViewModel : ViewModel() {
         viewModelScope.launch {
             mensajeError = null
             try {
-                listaTiposDieta = RetrofitClient.apiNutricion.obtenerTiposDieta()
+                // Obtenemos los tipos de dieta y los traducimos para la visualización en la UI
+                // Pero guardaremos el nombre original para el filtrado si es necesario
+                val dietas = RetrofitClient.apiNutricion.obtenerTiposDieta()
+                listaTiposDieta = dietas.map { it.copy(nombre_tipo = TraduccionUtils.traducir(it.nombre_tipo)) }
             } catch (e: Exception) {
                 mensajeError = "Error al conectar con el servidor: ${e.message}"
             }
@@ -44,7 +49,10 @@ class NutricionViewModel : ViewModel() {
             mensajeError = null
             try {
                 val respuesta = RetrofitClient.apiNutricion.obtenerRecetasCache()
-                Log.d("NUTRICION", "✅ Recetas cache recibidas: ${respuesta.size}")
+                Log.d("TRADUCCION_DEBUG", "✅ Crudo: Recetas cache recibidas: ${respuesta.size}")
+                respuesta.forEach { 
+                    Log.d("TRADUCCION_DEBUG", "Dato crudo del servidor: '${it.nombre_comida}'")
+                }
 
                 val mapeadas = mapearRecetas(respuesta)
                 todasLasComidas = mapeadas
@@ -61,7 +69,9 @@ class NutricionViewModel : ViewModel() {
 
     fun seleccionarDietaYBuscarComidas(dieta: TipoAlimentacion) {
         dietaSeleccionada = dieta
-        val nombreDieta = dieta.nombre_tipo.lowercase().trim()
+        // Para filtrar, traducimos el nombre de vuelta al inglés si es necesario, 
+        // o usamos el nombre que ya viene (que ahora está traducido en la lista)
+        val nombreDietaIngles = TraduccionUtils.traducirAlIngles(dieta.nombre_tipo)?.lowercase()?.trim() ?: ""
 
         listaComidas = todasLasComidas.filter { receta ->
             val tipoCacheKey = receta.cacheKey
@@ -70,7 +80,7 @@ class NutricionViewModel : ViewModel() {
                 ?.lowercase()
                 ?.trim()
 
-            tipoCacheKey == nombreDieta
+            tipoCacheKey == nombreDietaIngles
         }
     }
 
@@ -90,11 +100,15 @@ class NutricionViewModel : ViewModel() {
             cargando = true
             mensajeError = null
             try {
-                Log.d("NUTRICION", "🔍 Llamando a /recomendaciones con dieta=$dieta, ingredientes=$ingredienteBuscado, carbos=$faltanCarbos, protes=$faltaProtes, grasas=$faltanGrasas")
+                // Traducir el ingrediente y la dieta buscada al inglés para la API
+                val ingredienteEnIngles = TraduccionUtils.traducirAlIngles(ingredienteBuscado)
+                val dietaEnIngles = TraduccionUtils.traducirAlIngles(dieta)
+                
+                Log.d("NUTRICION", "🔍 Buscando: $ingredienteBuscado -> API: $ingredienteEnIngles")
 
                 val respuesta = RetrofitClient.apiNutricion.obtenerRecomendaciones(
-                    tipoDieta = dieta,
-                    ingredientes = ingredienteBuscado,
+                    tipoDieta = dietaEnIngles,
+                    ingredientes = ingredienteEnIngles,
                     maxCarbohidratos = faltanCarbos,
                     minProteina = faltaProtes,
                     maxGrasa = faltanGrasas
@@ -123,11 +137,18 @@ class NutricionViewModel : ViewModel() {
     }
 
     private fun mapearRecetas(recetas: List<ComidaRecomendada>): List<ComidaRecomendada> {
+        Log.d("TRADUCCION_DEBUG", "Mapeando ${recetas.size} recetas para traducción")
         return recetas.map { receta ->
-            receta.copy(
-                ingredientes_lista = parsearJsonALista(receta.ingredientes_json),
+            val ingredientes = parsearJsonALista(receta.ingredientes_json)
+            
+            val traducida = receta.copy(
+                nombre_comida = TraduccionUtils.traducir(receta.nombre_comida),
+                descripcion_comida = TraduccionUtils.traducir(receta.descripcion_comida),
+                ingredientes_lista = TraduccionUtils.traducirLista(ingredientes),
                 preparacion_lista  = parsearJsonALista(receta.preparacion_json)
             )
+            Log.d("TRADUCCION_DEBUG", "Receta traducida: ${traducida.nombre_comida}")
+            traducida
         }
     }
 

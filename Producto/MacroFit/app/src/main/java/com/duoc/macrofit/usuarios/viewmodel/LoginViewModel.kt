@@ -21,6 +21,14 @@ class LoginViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
     var usuarioLogueado by mutableStateOf<LoginResponse?>(null)
 
+    fun resetState() {
+        correo = ""
+        contrasena = ""
+        usuarioLogueado = null
+        errorMessage = null
+        isLoading = false
+    }
+
     fun login() {
         if (correo.isBlank() || contrasena.isBlank()) {
             errorMessage = "Por favor, completa todos los campos"

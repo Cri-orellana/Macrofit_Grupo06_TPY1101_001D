@@ -7,4 +7,5 @@ data class CrearRutinaRequest(
 
     val descripcion: String?,
     val cantidadDias: Int
+
 )

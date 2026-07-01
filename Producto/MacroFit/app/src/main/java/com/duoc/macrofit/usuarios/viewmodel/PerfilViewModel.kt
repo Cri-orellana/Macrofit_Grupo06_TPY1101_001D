@@ -15,6 +15,7 @@ class PerfilViewModel : ViewModel() {
     var cargando by mutableStateOf(false)
     var mensajeError by mutableStateOf<String?>(null)
 
+    // Función que llama a Retrofit
     fun actualizarPerfilServidor(
         nombre: String,
         correo: String,
@@ -33,18 +34,15 @@ class PerfilViewModel : ViewModel() {
             try {
                 val datosNuevos = usuarioActual.copy(
                     nom_usuario = nombre,
-                    correo      = correo,
-                    edad        = edad,
-                    peso        = peso,
-                    altura      = altura,
-                    id_nv_act   = idNivelActividad,
+                    correo = correo,
+                    edad = edad,
+                    peso = peso,
+                    altura = altura,
+                    id_nv_act = idNivelActividad,
                     id_objetivo = idObjetivo
                 )
 
-                val respuesta = RetrofitClient.apiService.actualizarPerfilUsuario(
-                    usuarioActual.id,
-                    datosNuevos
-                )
+                val respuesta = RetrofitClient.apiService.actualizarPerfilUsuario(usuarioActual.id, datosNuevos)
 
                 if (respuesta.isSuccessful && respuesta.body() != null) {
                     val usuarioActualizado = respuesta.body()!!

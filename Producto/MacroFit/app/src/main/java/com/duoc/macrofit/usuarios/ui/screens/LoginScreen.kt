@@ -3,11 +3,13 @@ package com.duoc.macrofit.usuarios.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.duoc.macrofit.usuarios.utils.SessionManager
 import com.duoc.macrofit.usuarios.viewmodel.LoginViewModel
 
 @Composable
@@ -16,8 +18,18 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToRegistro: () -> Unit
 ) {
-    if (viewModel.usuarioLogueado != null) {
-        onLoginSuccess()
+    // Resetear ViewModel al entrar si no hay sesión activa (post-logout)
+    LaunchedEffect(Unit) {
+        if (SessionManager.usuarioActual == null) {
+            viewModel.resetState()
+        }
+    }
+
+    // Escuchar cambios en usuarioLogueado para navegar al éxito
+    LaunchedEffect(viewModel.usuarioLogueado) {
+        if (viewModel.usuarioLogueado != null) {
+            onLoginSuccess()
+        }
     }
 
     MacroFitFondoUniversal {

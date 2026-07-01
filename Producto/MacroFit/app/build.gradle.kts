@@ -68,7 +68,6 @@ dependencies {
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
     implementation(libs.mpandroidchart)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
-
     // CameraX
     val cameraxVersion = "1.3.4"
     implementation("androidx.camera:camera-camera2:$cameraxVersion")

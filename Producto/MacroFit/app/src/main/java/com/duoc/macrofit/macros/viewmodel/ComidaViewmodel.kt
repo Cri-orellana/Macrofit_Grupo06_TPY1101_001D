@@ -236,26 +236,46 @@ class SeleccionarComidaViewModel : ViewModel() {
     fun cargarDiarioDelDia(usuarioId: Int) {
         viewModelScope.launch {
             try {
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val hoy = sdf.format(Date())
+                val ultimaFechaApp = SessionManager.obtenerUltimaFechaActiva()
+
+                // 1. PRIMER DISPARADOR: Cambio de fecha detectado por el teléfono
+                if (ultimaFechaApp != null && ultimaFechaApp != hoy) {
+                    Log.d("DIARIO_AUTO", "Disparador 1: Fecha App distinta ($ultimaFechaApp vs $hoy). Cerrando...")
+                    val resp = RetrofitClient.apiMacros.cerrarDiaManual(usuarioId.toString())
+                    if (resp.isSuccessful) {
+                        SessionManager.guardarUltimaFechaActiva(hoy)
+                        SessionManager.guardarDiarioCache("") // Limpiar caché inmediatamente
+                        _comidasAgregadas.value = emptyList()
+                        recalcularTotales(emptyList())
+                    }
+                }
+
                 val response = RetrofitClient.apiMacros.obtenerDiario(usuarioId.toString())
                 if (response.isSuccessful && response.body() != null) {
                     val items = response.body()!!
-                    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val hoy = sdf.format(Date())
 
-                    val hayItemsAntiguos = items.any { 
-                        it.fechareg != null && it.fechareg.length >= 10 && !it.fechareg.startsWith(hoy) 
+                    // 2. SEGUNDO DISPARADOR: El servidor devuelve alimentos con fechas antiguas
+                    val hayItemsAntiguos = items.any {
+                        val fechaItem = it.fechareg ?: ""
+                        fechaItem.isNotEmpty() && !fechaItem.startsWith(hoy)
                     }
 
                     if (hayItemsAntiguos) {
-                        Log.d("DIARIO_AUTO", "Se detectaron alimentos de días anteriores. Cerrando día...")
+                        Log.d("DIARIO_AUTO", "Disparador 2: Items antiguos detectados en el servidor. Cerrando...")
                         val closeResp = RetrofitClient.apiMacros.cerrarDiaManual(usuarioId.toString())
                         if (closeResp.isSuccessful) {
+                            SessionManager.guardarUltimaFechaActiva(hoy)
+                            SessionManager.guardarDiarioCache("")
                             _comidasAgregadas.value = emptyList()
                             recalcularTotales(emptyList())
                             return@launch
                         }
                     }
 
+                    // Si llegamos aquí, los datos son de hoy
+                    SessionManager.guardarUltimaFechaActiva(hoy)
                     val listaData = items.map { comidaProc ->
                         ComidaAgregada(
                             id = comidaProc.id,
@@ -272,7 +292,7 @@ class SeleccionarComidaViewModel : ViewModel() {
                     recalcularTotales(listaData)
                 }
             } catch (e: Exception) {
-                Log.e("DIARIO", "Error cargando diario: ${e.message}")
+                Log.e("DIARIO", "Error crítico en carga/cierre automático: ${e.message}")
             }
         }
     }

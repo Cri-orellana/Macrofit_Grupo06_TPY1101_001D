@@ -17,9 +17,11 @@ import com.duoc.macrofit.usuarios.ui.screens.RegistroScreen
 import com.duoc.macrofit.usuarios.ui.theme.MacrofitTheme
 import com.duoc.macrofit.usuarios.utils.SessionManager
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         SessionManager.init(applicationContext)
 
         setContent {
@@ -28,16 +30,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var isLogged by remember { mutableStateOf(SessionManager.haySesion()) }
+                    var isLogged by remember { mutableStateOf(SessionManager.usuarioActual != null) }
                     var enPantallaRegistro by remember { mutableStateOf(false) }
 
                     if (isLogged) {
-                        MainScreen()
+                        MainScreen(onLogout = { 
+                            isLogged = false 
+                        })
                     } else {
                         if (enPantallaRegistro) {
                             RegistroScreen(
                                 onRegistroExitoso = {
-                                    if (SessionManager.haySesion()) {
+                                    if(SessionManager.usuarioActual != null) {
                                         isLogged = true
                                     }
                                     enPantallaRegistro = false
@@ -46,7 +50,9 @@ class MainActivity : ComponentActivity() {
                             )
                         } else {
                             LoginScreen(
-                                onLoginSuccess = { isLogged = true },
+                                onLoginSuccess = {
+                                    isLogged = true
+                                },
                                 onNavigateToRegistro = { enPantallaRegistro = true }
                             )
                         }

@@ -8,8 +8,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Scaffold
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
@@ -30,6 +35,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.duoc.macrofit.macros.view.DiarioScreen
+import com.duoc.macrofit.macros.view.ProgresoScreen
 import com.duoc.macrofit.macros.viewmodel.SeleccionarComidaViewModel
 import com.duoc.macrofit.nutricion.view.NutricionScreen
 import com.duoc.macrofit.rutinas.view.CrearRutinaScreen
@@ -37,11 +43,12 @@ import com.duoc.macrofit.rutinas.view.EstadisticasScreen
 import com.duoc.macrofit.rutinas.view.RutinasScreen
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit) {
     val navController = rememberNavController()
     var mostrarCrearRutina by remember { mutableStateOf(false) }
     var idRutinaEditar by remember { mutableStateOf<Int?>(null) }
 
+    // ✅ Una sola instancia compartida
     val macrosViewModel: SeleccionarComidaViewModel = viewModel()
 
     MacroFitFondoUniversal {
@@ -51,11 +58,11 @@ fun MainScreen() {
                 FloatingActionButton(
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    onClick = { navController.navigate("estadisticas") }
+                    onClick = { navController.navigate("progreso") }
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Estadísticas",
+                        imageVector = Icons.Filled.AutoGraph,
+                        contentDescription = "Progreso",
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -64,6 +71,7 @@ fun MainScreen() {
             isFloatingActionButtonDocked = true,
             bottomBar = {
                 BottomAppBar(
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
                     cutoutShape = CircleShape,
                     backgroundColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onBackground
@@ -95,6 +103,9 @@ fun MainScreen() {
                     composable("macros") {
                         DiarioScreen(viewModel = macrosViewModel)
                     }
+                    composable("progreso") {
+                        ProgresoScreen()
+                    }
                     composable("rutinas") {
                         if (mostrarCrearRutina) {
                             CrearRutinaScreen(
@@ -125,13 +136,11 @@ fun MainScreen() {
                             )
                         }
                     }
-
                     composable("estadisticas") {
                         EstadisticasScreen()
                     }
-
                     composable("perfil") {
-                        PerfilScreen()
+                        PerfilScreen(onLogout = onLogout)
                     }
                 }
             }

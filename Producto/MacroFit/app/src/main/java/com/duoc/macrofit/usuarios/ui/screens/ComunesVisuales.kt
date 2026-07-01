@@ -18,7 +18,9 @@ fun MacroFitFondoUniversal(
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         Image(
             painter = painterResource(id = fondo_app),

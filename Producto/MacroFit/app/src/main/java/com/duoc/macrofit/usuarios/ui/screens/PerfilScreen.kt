@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.macrofit.usuarios.viewmodel.PerfilViewModel
 import com.duoc.macrofit.usuarios.utils.SessionManager
 @Composable
-fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
+fun PerfilScreen(viewModel: PerfilViewModel = viewModel(), onLogout: () -> Unit) {
 
     var usuarioEnPantalla by remember { mutableStateOf(SessionManager.usuarioActual) }
     var mostrarPopup by remember { mutableStateOf(false) }
@@ -44,6 +44,7 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars)
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -135,7 +136,10 @@ fun PerfilScreen(viewModel: PerfilViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { SessionManager.cerrarSesion() },
+                onClick = { 
+                    SessionManager.cerrarSesion()
+                    onLogout()
+                },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
