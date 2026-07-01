@@ -7,6 +7,7 @@ import com.duoc.macrofit.rutinas.model.Ejercicio
 import com.duoc.macrofit.rutinas.model.Rutina
 import com.duoc.macrofit.rutinas.model.RutinaEjercicio
 import com.duoc.macrofit.rutinas.model.RutinaUsuario
+import com.duoc.macrofit.rutinas.model.RutinaUsuarioHistorialDTO
 import retrofit2.http.PUT
 import retrofit2.Response
 import retrofit2.http.Body
@@ -18,7 +19,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RutinaEjercicioApi {
-
 
     // ---- RUTINAS ----
     @GET("rutinas/activas")
@@ -114,4 +114,6 @@ interface RutinaEjercicioApi {
         @Path("idUsuario") idUsuario: Int
     ): Response<Unit>
 
+    @GET("rutina-usuario/usuario/{idUsuario}/historial")
+    suspend fun obtenerHistorial(@Path("idUsuario") idUsuario: Int): Response<List<RutinaUsuarioHistorialDTO>>
 }

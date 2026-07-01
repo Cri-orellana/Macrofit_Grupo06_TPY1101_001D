@@ -215,6 +215,64 @@ private fun PasoNombreDescripcion(viewModel: CrearRutinaViewModel) {
             colors = camposColors(verde),
             shape = RoundedCornerShape(12.dp)
         )
+
+        // --- INTEGRADO DEL CÓDIGO 1 ---
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Días de entrenamiento",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    Text(
+                        text = "Define cuántos días tendrá esta rutina.",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.disminuirDias() },
+                        enabled = viewModel.cantidadDias > 1,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text("-")
+                    }
+
+                    Text(
+                        text = "${viewModel.cantidadDias}",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    OutlinedButton(
+                        onClick = { viewModel.aumentarDias() },
+                        enabled = viewModel.cantidadDias < 7,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text("+")
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -373,6 +431,7 @@ private fun PasoRevisionParametros(viewModel: CrearRutinaViewModel) {
                 EjercicioSeleccionadoCard(
                     item = sel,
                     numero = index + 1,
+                    cantidadDias = viewModel.cantidadDias, // --- INTEGRADO DEL CÓDIGO 1 ---
                     onEliminar = { viewModel.eliminarEjercicio(sel.idEjercicio) },
                     onCambio = { actualizado -> viewModel.actualizarParametros(actualizado) },
                     onCambiarDia = { nuevoDia ->

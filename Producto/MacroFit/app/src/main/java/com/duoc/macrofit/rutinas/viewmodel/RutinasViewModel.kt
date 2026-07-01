@@ -11,6 +11,7 @@ import com.duoc.macrofit.rutinas.model.Ejercicio
 import com.duoc.macrofit.rutinas.model.Rutina
 import com.duoc.macrofit.rutinas.model.RutinaEjercicio
 import com.duoc.macrofit.rutinas.model.RutinaUsuario
+import com.duoc.macrofit.rutinas.model.RutinaUsuarioHistorialDTO // --- INTEGRADO DEL CÓDIGO 1 ---
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -62,6 +63,11 @@ class RutinasViewModel : ViewModel() {
     var filtroImplemento by mutableStateOf<String?>(null)
     var filtroNivelDificultad by mutableStateOf<String?>(null)
     var filtroMusculoObjetivo by mutableStateOf<String?>(null)
+
+    // --- INTEGRADO DEL CÓDIGO 1: Historial ---
+    var historialRutinas by mutableStateOf<List<RutinaUsuarioHistorialDTO>>(emptyList())
+    var cargandoHistorial by mutableStateOf(false)
+    var errorHistorial by mutableStateOf<String?>(null)
 
     init {
         cargarRutinaActiva()
@@ -355,6 +361,27 @@ class RutinasViewModel : ViewModel() {
                 error = "Error al eliminar rutina: ${e.message}"
             } finally {
                 cargando = false
+            }
+        }
+    }
+
+    // --- INTEGRADO DEL CÓDIGO 1: Cargar Historial ---
+    fun cargarHistorialRutinas() {
+        val idUsuario = SessionManager.usuarioActual?.id ?: return
+        viewModelScope.launch {
+            cargandoHistorial = true
+            errorHistorial = null
+            try {
+                val respuesta = api.obtenerHistorial(idUsuario)
+                if (respuesta.isSuccessful && respuesta.body() != null) {
+                    historialRutinas = respuesta.body()!!
+                } else {
+                    historialRutinas = emptyList()
+                }
+            } catch (e: Exception) {
+                errorHistorial = "No se pudo conectar con el servidor de rutinas."
+            } finally {
+                cargandoHistorial = false
             }
         }
     }

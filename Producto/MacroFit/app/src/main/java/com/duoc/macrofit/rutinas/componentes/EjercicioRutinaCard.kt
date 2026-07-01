@@ -1,3 +1,5 @@
+package com.duoc.macrofit.rutinas.componentes
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,8 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.duoc.macrofit.rutinas.componentes.ChipParametro
-import com.duoc.macrofit.rutinas.componentes.YoutubeVideoPlayer
 import com.duoc.macrofit.rutinas.viewmodel.EjercicioEnRutina
 
 @Composable

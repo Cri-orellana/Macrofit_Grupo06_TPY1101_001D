@@ -39,6 +39,7 @@ class CrearRutinaViewModel : ViewModel() {
     // ── Estado del formulario ─────────────────────────────────────────────────
     var nombreRutina by mutableStateOf("")
     var descripcionRutina by mutableStateOf("")
+    var cantidadDias by mutableStateOf(3) // --- INTEGRADO DEL CÓDIGO 1 ---
 
     // ── Catálogo de ejercicios ────────────────────────────────────────────────
     var todosLosEjercicios by mutableStateOf<List<Ejercicio>>(emptyList())
@@ -101,6 +102,31 @@ class CrearRutinaViewModel : ViewModel() {
             } else {
                 ejercicio
             }
+        }
+    }
+
+    // --- INTEGRADO DEL CÓDIGO 1: Control de cantidad de días ---
+    fun aumentarDias() {
+        if (cantidadDias < 7) {
+            cantidadDias++
+        }
+    }
+
+    fun disminuirDias() {
+        if (cantidadDias > 1) {
+            val nuevoValor = cantidadDias - 1
+
+            val hayEjerciciosEnDiasEliminados = ejerciciosSeleccionados.any { ejercicio ->
+                ejercicio.dia > nuevoValor
+            }
+
+            if (hayEjerciciosEnDiasEliminados) {
+                errorMensaje = "No puedes disminuir días porque hay ejercicios asignados al día $cantidadDias. Muévelos o elimínalos primero."
+                return
+            }
+
+            cantidadDias = nuevoValor
+            errorMensaje = null
         }
     }
 
@@ -176,7 +202,8 @@ class CrearRutinaViewModel : ViewModel() {
                     idUsuario = idUsuario,
                     CrearRutinaRequest(
                         nombreRutina = nombreRutina,
-                        descripcion = descripcionRutina.ifBlank { null }
+                        descripcion = descripcionRutina.ifBlank { null },
+                        cantidadDias = cantidadDias // --- INTEGRADO DEL CÓDIGO 1 ---
                     )
                 )
                 if (!rutinaResp.isSuccessful || rutinaResp.body() == null) {
@@ -235,6 +262,7 @@ class CrearRutinaViewModel : ViewModel() {
 
                 nombreRutina = rutina.nombreRutina
                 descripcionRutina = rutina.descripcion ?: ""
+                cantidadDias = rutina.cantidadDias ?: 3 // --- INTEGRADO DEL CÓDIGO 1 ---
 
                 if (todosLosEjercicios.isEmpty()) {
                     val respEjercicios = api.obtenerEjerciciosActivos()
@@ -304,7 +332,8 @@ class CrearRutinaViewModel : ViewModel() {
                     idUsuario = idUsuario,
                     request = CrearRutinaRequest(
                         nombreRutina = nombreRutina,
-                        descripcion = descripcionRutina.ifBlank { null }
+                        descripcion = descripcionRutina.ifBlank { null },
+                        cantidadDias = cantidadDias // --- INTEGRADO DEL CÓDIGO 1 ---
                     )
                 )
                 if (!respRutina.isSuccessful) {
@@ -350,6 +379,7 @@ class CrearRutinaViewModel : ViewModel() {
     fun limpiar() {
         nombreRutina = ""
         descripcionRutina = ""
+        cantidadDias = 3 // --- INTEGRADO DEL CÓDIGO 1 ---
         ejerciciosSeleccionados = emptyList()
         busqueda = ""
         zonaFiltro = null

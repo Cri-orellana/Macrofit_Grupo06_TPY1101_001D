@@ -1,23 +1,24 @@
 package com.duoc.macrofit.rutinas.view
 
-import EjercicioRutinaCard
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.duoc.macrofit.rutinas.componentes.EjercicioRutinaCard
+import com.duoc.macrofit.rutinas.model.Rutina
 import com.duoc.macrofit.rutinas.viewmodel.RutinasViewModel
 import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo
-import com.duoc.macrofit.rutinas.model.Rutina
-import androidx.compose.material3.*
-import androidx.compose.material.icons.filled.*
-import androidx.compose.foundation.*
 import com.duoc.macrofit.usuarios.utils.SessionManager
 
 @Composable

@@ -33,6 +33,7 @@ import com.duoc.macrofit.macros.view.DiarioScreen
 import com.duoc.macrofit.macros.viewmodel.SeleccionarComidaViewModel
 import com.duoc.macrofit.nutricion.view.NutricionScreen
 import com.duoc.macrofit.rutinas.view.CrearRutinaScreen
+import com.duoc.macrofit.rutinas.view.EstadisticasScreen
 import com.duoc.macrofit.rutinas.view.RutinasScreen
 
 @Composable
@@ -41,7 +42,6 @@ fun MainScreen() {
     var mostrarCrearRutina by remember { mutableStateOf(false) }
     var idRutinaEditar by remember { mutableStateOf<Int?>(null) }
 
-    // ✅ Una sola instancia compartida
     val macrosViewModel: SeleccionarComidaViewModel = viewModel()
 
     MacroFitFondoUniversal {
@@ -51,11 +51,11 @@ fun MainScreen() {
                 FloatingActionButton(
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    onClick = { }
+                    onClick = { navController.navigate("estadisticas") }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Añadir",
+                        contentDescription = "Estadísticas",
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -92,7 +92,6 @@ fun MainScreen() {
                     composable("nutricion") {
                         NutricionScreen(macrosViewModel = macrosViewModel)
                     }
-                    // ✅ Solo UNA vez, con el viewModel compartido
                     composable("macros") {
                         DiarioScreen(viewModel = macrosViewModel)
                     }
@@ -101,10 +100,12 @@ fun MainScreen() {
                             CrearRutinaScreen(
                                 idRutinaEditar = idRutinaEditar,
                                 onVolver = {
+                                    Log.d("NAV_RUTINA", "Volver desde CrearRutinaScreen")
                                     idRutinaEditar = null
                                     mostrarCrearRutina = false
                                 },
                                 onRutinaCreada = {
+                                    Log.d("NAV_RUTINA", "Rutina creada/editada, volviendo. idRutinaEditar=$idRutinaEditar")
                                     idRutinaEditar = null
                                     mostrarCrearRutina = false
                                 }
@@ -112,16 +113,23 @@ fun MainScreen() {
                         } else {
                             RutinasScreen(
                                 onCrearRutina = {
+                                    Log.d("NAV_RUTINA", "Crear rutina nueva")
                                     idRutinaEditar = null
                                     mostrarCrearRutina = true
                                 },
                                 onEditarRutina = { rutina ->
+                                    Log.d("NAV_RUTINA", "Editar rutina recibida: idRutina=${rutina.idRutina}")
                                     idRutinaEditar = rutina.idRutina
                                     mostrarCrearRutina = true
                                 }
                             )
                         }
                     }
+
+                    composable("estadisticas") {
+                        EstadisticasScreen()
+                    }
+
                     composable("perfil") {
                         PerfilScreen()
                     }

@@ -11,6 +11,8 @@ data class Rutina(
 
     val descripcion: String?,
 
+    val cantidadDias: Int? = 1,
+
     val esBase: Boolean?,
 
     val activoCatalogo: Boolean?

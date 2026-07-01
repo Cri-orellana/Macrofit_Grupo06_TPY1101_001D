@@ -30,6 +30,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -65,6 +66,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
+    implementation(libs.mpandroidchart)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 
     // CameraX
     val cameraxVersion = "1.3.4"

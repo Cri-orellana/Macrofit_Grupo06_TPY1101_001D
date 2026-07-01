@@ -1,6 +1,5 @@
 package com.duoc.macrofit.rutinas.view
 
-import EjercicioRutinaCard
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.duoc.macrofit.rutinas.componentes.EjercicioRutinaCard
 import com.duoc.macrofit.rutinas.model.Rutina
 import com.duoc.macrofit.rutinas.viewmodel.RutinasViewModel
 import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo

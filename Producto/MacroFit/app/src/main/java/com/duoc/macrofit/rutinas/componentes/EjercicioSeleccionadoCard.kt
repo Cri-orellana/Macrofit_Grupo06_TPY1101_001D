@@ -24,6 +24,7 @@ import com.duoc.macrofit.rutinas.viewmodel.EjercicioSeleccionado
  *
  * @param item     El ejercicio seleccionado con sus parámetros actuales.
  * @param numero   Posición en la lista (orden visual).
+ * @param cantidadDias Cantidad de días asignados a la rutina.
  * @param onEliminar Callback para quitarlo de la lista.
  * @param onCambio Callback cuando el usuario edita algún parámetro.
  * @param onCambiarDia Callback para asignar el ejercicio a un día específico.
@@ -32,6 +33,7 @@ import com.duoc.macrofit.rutinas.viewmodel.EjercicioSeleccionado
 fun EjercicioSeleccionadoCard(
     item: EjercicioSeleccionado,
     numero: Int,
+    cantidadDias: Int,
     onEliminar: () -> Unit,
     onCambio: (EjercicioSeleccionado) -> Unit,
     onCambiarDia: (Int) -> Unit
@@ -119,7 +121,8 @@ fun EjercicioSeleccionadoCard(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                (1..7).forEach { dia ->
+                // Generación dinámica en base a cantidadDias integrada del Código 1
+                (1..cantidadDias).forEach { dia ->
                     val seleccionado = item.dia == dia
 
                     FilterChip(
