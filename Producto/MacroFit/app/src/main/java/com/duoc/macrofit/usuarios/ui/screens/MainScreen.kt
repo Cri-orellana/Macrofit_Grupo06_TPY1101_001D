@@ -103,9 +103,17 @@ fun MainScreen(onLogout: () -> Unit) {
                     composable("macros") {
                         DiarioScreen(viewModel = macrosViewModel)
                     }
+
+                    // ── RUTA ACTUALIZADA ───────────────────────────
                     composable("progreso") {
-                        ProgresoScreen()
+                        ProgresoScreen(
+                            onNavigateToEstadisticas = {
+                                navController.navigate("estadisticas")
+                            }
+                        )
                     }
+                    // ───────────────────────────────────────────────
+
                     composable("rutinas") {
                         if (mostrarCrearRutina) {
                             CrearRutinaScreen(

@@ -11,12 +11,12 @@ import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-
 @Composable
 fun EstadisticasScreen(
     refreshKey: Int = 0,
     viewModel: RutinasViewModel = viewModel()
 ) {
+    val verde = Color(0xFF76E320)
     val colorOscuro = Color(0xFF1A1A1A)
 
     LaunchedEffect(refreshKey) {
@@ -27,11 +27,13 @@ fun EstadisticasScreen(
         when {
             viewModel.cargandoHistorial -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = verde)
                 }
             }
             viewModel.errorHistorial != null -> {
-                Text(viewModel.errorHistorial!!, color = Color.Red)
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(viewModel.errorHistorial!!, color = Color.Red)
+                }
             }
             else -> {
                 HistorialRutinasView(

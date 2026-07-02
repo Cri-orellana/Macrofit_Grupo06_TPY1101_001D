@@ -2,16 +2,20 @@ package com.duoc.macrofit.rutinas.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.duoc.macrofit.rutinas.componentes.EstadisticaCard
 import com.duoc.macrofit.rutinas.viewmodel.RutinasViewModel
+import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -25,6 +29,12 @@ fun HistorialRutinasView(
     colorOscuro: Color
 ) {
     val historial = viewModel.historialRutinas
+    val verde = Color(0xFF76E320)
+
+    val rutinaActiva = historial.firstOrNull { it.activo }
+    val diasActivo = rutinaActiva?.let {
+        ChronoUnit.DAYS.between(LocalDate.parse(it.fechaInicio), LocalDate.now())
+    } ?: 0L
 
     val entradas = historial.mapIndexed { index, ru ->
         val inicio = LocalDate.parse(ru.fechaInicio)
@@ -32,15 +42,46 @@ fun HistorialRutinasView(
         BarEntry(index.toFloat(), ChronoUnit.DAYS.between(inicio, fin).toFloat())
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()) // <-- SOLUCIÓN: Agregamos el scroll a toda la pantalla
+            .padding(horizontal = 16.dp)
+    ) {
+        Spacer(Modifier.height(16.dp))
+
+        MacroFitHeaderLogo()
+
+        Spacer(Modifier.height(4.dp))
 
         Text(
-            text = "Rutinas usadas: ${historial.size}",
+            text = "Mis Estadísticas",
             color = Color.White,
-            fontSize = 18.sp
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            EstadisticaCard(
+                titulo = "Rutina activa",
+                valor = rutinaActiva?.nombreRutina ?: "Ninguna",
+                subtitulo = "$diasActivo días activa",
+                colorValor = Color.White,
+                modifier = Modifier.weight(1f)
+            )
+            EstadisticaCard(
+                titulo = "Rutinas usadas",
+                valor = "${historial.size}",
+                subtitulo = "en total",
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "Días por rutina",
@@ -78,28 +119,48 @@ fun HistorialRutinasView(
         Text(
             text = "Historial",
             color = Color.White,
-            fontSize = 16.sp
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        LazyColumn {
-            items(historial) { item ->
+        // SOLUCIÓN: Cambiamos LazyColumn por Column + forEach para evitar conflictos de scroll
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            historial.forEach { item ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .background(colorOscuro)
-                        .padding(12.dp)
+                        .background(colorOscuro, RoundedCornerShape(12.dp))
+                        .padding(16.dp)
                 ) {
-                    Text(item.nombreRutina ?: "Sin nombre", color = Color.White)
                     Text(
-                        "${item.fechaInicio} → ${item.fechaFin ?: "actual"}",
-                        color = Color.Gray
+                        text = item.nombreRutina ?: "Sin nombre",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
-                    if (item.activo) Text("Activa", color = Color.Green)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "${item.fechaInicio} → ${item.fechaFin ?: "actual"}",
+                        color = Color.Gray,
+                        fontSize = 13.sp
+                    )
+                    if (item.activo) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Activa",
+                            color = verde,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
+
+        // Espaciado final para que la lista no quede escondida detrás del menú inferior
+        Spacer(modifier = Modifier.height(90.dp))
     }
 }

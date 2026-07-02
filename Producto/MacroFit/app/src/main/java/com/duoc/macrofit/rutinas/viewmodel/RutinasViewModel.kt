@@ -389,8 +389,10 @@ class RutinasViewModel : ViewModel() {
     // ─────────────────────────────────────────────────────────────────────────────
     // Función integrada desde el primer bloque de código
     // ─────────────────────────────────────────────────────────────────────────────
-    fun obtenerEjerciciosPorDia(): Map<Int, List<EjercicioEnRutina>> {
-        return ejerciciosEnRutina
+    fun obtenerEjerciciosPorDia(
+        lista: List<EjercicioEnRutina> = ejerciciosEnRutina
+    ): Map<Int, List<EjercicioEnRutina>> {
+        return lista
             .groupBy { it.parametros.dia ?: 1 }
             .toSortedMap()
             .mapValues { entry ->

@@ -51,6 +51,29 @@ class CrearRutinaViewModel : ViewModel() {
     // zonaFiltro ahora es String? ya que zonaMuscular viene como texto en Ejercicio
     var zonaFiltro by mutableStateOf<String?>(null)
 
+    // Filtros extra integrados del Código 1
+    var implementoFiltro by mutableStateOf<String?>(null)
+    var nivelFiltro by mutableStateOf<String?>(null)
+    var musculoObjetivoFiltro by mutableStateOf<String?>(null)
+
+    val implementosDisponibles: List<String>
+        get() = todosLosEjercicios.mapNotNull { it.implemento }.distinct().sorted()
+
+    val nivelesDisponibles: List<String>
+        get() = todosLosEjercicios.mapNotNull { it.nivelDificultad }.distinct().sorted()
+
+    val musculosObjetivoDisponibles: List<String>
+        get() = todosLosEjercicios.mapNotNull { it.musculoObjetivo }.distinct().sorted()
+
+    val cantidadFiltrosExtra: Int
+        get() = listOfNotNull(implementoFiltro, nivelFiltro, musculoObjetivoFiltro).size
+
+    fun limpiarFiltrosExtra() {
+        implementoFiltro = null
+        nivelFiltro = null
+        musculoObjetivoFiltro = null
+    }
+
     // Zonas únicas extraídas de la lista de ejercicios (sin llamada extra al backend)
     val zonasDisponibles: List<String>
         get() = todosLosEjercicios
@@ -58,14 +81,20 @@ class CrearRutinaViewModel : ViewModel() {
             .distinct()
             .sorted()
 
-    // Ejercicios visibles tras aplicar filtros
+    // Ejercicios visibles tras aplicar filtros (integrado con Código 1)
     val ejerciciosFiltrados: List<Ejercicio>
         get() = todosLosEjercicios.filter { ej ->
             val coincideNombre = busqueda.isBlank() ||
                     ej.nombreEjercicio.contains(busqueda, ignoreCase = true)
             val coincideZona = zonaFiltro == null ||
                     ej.zonaMuscular.equals(zonaFiltro, ignoreCase = true)
-            coincideNombre && coincideZona
+            val coincideImplemento = implementoFiltro == null ||
+                    ej.implemento.equals(implementoFiltro, ignoreCase = true)
+            val coincideNivel = nivelFiltro == null ||
+                    ej.nivelDificultad.equals(nivelFiltro, ignoreCase = true)
+            val coincideMusculo = musculoObjetivoFiltro == null ||
+                    ej.musculoObjetivo.equals(musculoObjetivoFiltro, ignoreCase = true)
+            coincideNombre && coincideZona && coincideImplemento && coincideNivel && coincideMusculo
         }
 
     // ── Ejercicios seleccionados ──────────────────────────────────────────────
@@ -383,6 +412,9 @@ class CrearRutinaViewModel : ViewModel() {
         ejerciciosSeleccionados = emptyList()
         busqueda = ""
         zonaFiltro = null
+        implementoFiltro = null
+        nivelFiltro = null
+        musculoObjetivoFiltro = null
         pasoActual = 1
         rutinaGuardadaExitosamente = false
         errorMensaje = null

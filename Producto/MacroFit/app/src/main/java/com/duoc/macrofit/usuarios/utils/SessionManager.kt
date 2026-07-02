@@ -19,6 +19,7 @@ object SessionManager {
     private val gson = Gson()
 
     var usuarioActual: Usuario? = null
+    var tokenActual: String? = null
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

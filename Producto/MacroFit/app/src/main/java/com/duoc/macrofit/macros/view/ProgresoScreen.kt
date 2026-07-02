@@ -1,11 +1,14 @@
 package com.duoc.macrofit.macros.view
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +29,8 @@ import com.duoc.macrofit.usuarios.ui.screens.MacroFitHeaderLogo
 @Composable
 fun ProgresoScreen(
     viewModel: ProgresoViewModel = viewModel(),
-    rutinasViewModel: RutinasViewModel = viewModel()
+    rutinasViewModel: RutinasViewModel = viewModel(),
+    onNavigateToEstadisticas: () -> Unit
 ) {
     val cargando by remember { derivedStateOf { viewModel.cargando } }
     val estadisticas = viewModel.listaFiltrada
@@ -42,11 +46,12 @@ fun ProgresoScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState()) // <-- SOLUCIÓN: Agregamos el scroll a toda la pantalla
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             MacroFitHeaderLogo()
-            
+
             Text(
                 text = "Resumen Estadístico",
                 style = MaterialTheme.typography.headlineSmall,
@@ -135,7 +140,6 @@ fun ProgresoScreen(
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 val gridColors = Color.Gray.copy(alpha = 0.2f)
                                 // Dibujar líneas horizontales en 0, 20, 40, 60, 80, 100% de la altura visual
-                                // que representan 125, 100, 75, 50, 25, 0% del límite
                                 listOf(0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f).forEach { ratio ->
                                     val y = size.height * ratio
                                     drawLine(
@@ -155,7 +159,7 @@ fun ProgresoScreen(
                             )
                         }
                     }
-                    
+
                     // Etiquetas de fecha
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp, start = 40.dp),
@@ -166,10 +170,10 @@ fun ProgresoScreen(
                             if (index % step == 0) {
                                 val label = stat.fecha.substringAfterLast("-")
                                 Text(
-                                    text = label, 
-                                    fontSize = 9.sp, 
-                                    color = Color.Gray, 
-                                    textAlign = TextAlign.Center, 
+                                    text = label,
+                                    fontSize = 9.sp,
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center,
                                     modifier = Modifier.weight(1f)
                                 )
                             } else if (estadisticas.size <= 15) {
@@ -180,9 +184,33 @@ fun ProgresoScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botón de Navegación a Estadísticas de Rutinas
+            OutlinedButton(
+                onClick = onNavigateToEstadisticas,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Assessment,
+                    contentDescription = "Ver Estadísticas",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = "Ver Historial de Rutinas",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Sección de Ejercicios
             Text(
                 text = "Progreso de Ejercicios",
                 style = MaterialTheme.typography.titleMedium,
@@ -190,30 +218,35 @@ fun ProgresoScreen(
                 color = Color.White,
                 modifier = Modifier.align(Alignment.Start)
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
 
             val ejercicios = rutinasViewModel.ejerciciosEnRutina
             if (ejercicios.isEmpty()) {
                 Text("No hay rutina activa para mostrar progreso", color = Color.Gray)
             } else {
-                LazyColumn(
+                // SOLUCIÓN: Cambiamos el LazyColumn por un Column normal con forEach
+                // para evitar choques con el scroll de la pantalla completa
+                Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(ejercicios) { ej ->
+                    ejercicios.forEach { ej ->
                         EjercicioProgresoItem(ej.detalle?.nombreEjercicio ?: "Ejercicio", ej.parametros)
                     }
                 }
             }
+
+            // Un pequeño espaciado final para que no quede pegado al menú inferior
+            Spacer(modifier = Modifier.height(90.dp))
         }
     }
 }
 
 @Composable
 fun BarChart(
-    data: List<com.duoc.macrofit.macros.viewmodel.EstadisticaDiaria>, 
-    macro: String, 
+    data: List<com.duoc.macrofit.macros.viewmodel.EstadisticaDiaria>,
+    macro: String,
     maxEjeY: Double,
     modifier: Modifier
 ) {
@@ -230,7 +263,7 @@ fun BarChart(
         // Ancho de barra y espaciado dinámico
         val barWidth = if (totalItems > 10) size.width / (totalItems * 1.2f) else size.width / (totalItems * 1.8f)
         val space = (size.width - (barWidth * totalItems)) / (totalItems + 1)
-        
+
         data.forEachIndexed { index, stat ->
             val value = when (macro) {
                 "Calorías" -> stat.calorias
@@ -239,12 +272,11 @@ fun BarChart(
                 "Grasas" -> stat.grasas
                 else -> 0.0
             }
-            
-            // La altura se calcula relativa al maxEjeY (que es 125% del límite)
+
             val barHeight = (value / maxEjeY) * size.height
             val x = space + index * (barWidth + space)
             val y = (size.height - barHeight.toFloat()).coerceAtLeast(0f)
-            
+
             drawRect(
                 color = colorBarra,
                 topLeft = Offset(x, y),
